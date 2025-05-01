@@ -3,16 +3,41 @@ import { Redirect } from 'wouter';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Loader2 } from 'lucide-react';
+import { Loader2, HelpCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { useApi } from '@/hooks/use-api';
+import { useToast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
   const { user, loading, login } = useAuth();
+  const { createMutation } = useApi();
+  const { toast } = useToast();
+  
   const [formData, setFormData] = useState({
     email: '',
     workId: '',
   });
+  
+  const [helpData, setHelpData] = useState({
+    email: '',
+    workId: '',
+    message: '',
+  });
+  
+  const [helpDialogOpen, setHelpDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Handle login form changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -21,6 +46,26 @@ const LoginPage = () => {
     }));
   };
 
+  // Handle help form changes
+  const handleHelpChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setHelpData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Set help form initial data from login form
+  const openHelpDialog = () => {
+    setHelpData(prev => ({
+      ...prev,
+      email: formData.email,
+      workId: formData.workId
+    }));
+    setHelpDialogOpen(true);
+  };
+
+  // Submit login form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -31,6 +76,29 @@ const LoginPage = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Submit help request
+  const helpRequestMutation = createMutation<typeof helpData, { requestId: number }>
+  ('POST', '/api/auth/help-request', {
+    successMessage: 'Help request submitted. An administrator will contact you shortly.',
+    onSuccess: () => {
+      setHelpDialogOpen(false);
+      setHelpData({ email: '', workId: '', message: '' });
+    }
+  });
+
+  const handleHelpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!helpData.email || !helpData.workId || !helpData.message) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all fields to submit a help request',
+        variant: 'destructive'
+      });
+      return;
+    }
+    helpRequestMutation.mutate(helpData);
   };
 
   // Redirect if already logged in
@@ -111,7 +179,94 @@ const LoginPage = () => {
                 )}
               </Button>
             </div>
+            
+            <div className="flex justify-center mt-4">
+              <Button 
+                type="button" 
+                variant="link" 
+                onClick={openHelpDialog}
+                className="text-sm flex items-center"
+              >
+                <HelpCircle className="h-4 w-4 mr-1" />
+                Need help logging in?
+              </Button>
+            </div>
           </form>
+          
+          {/* Help Request Dialog */}
+          <Dialog open={helpDialogOpen} onOpenChange={setHelpDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Request Login Assistance</DialogTitle>
+                <DialogDescription>
+                  Fill out this form to request help with your account. An administrator will contact you shortly.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <form onSubmit={handleHelpSubmit} className="space-y-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="help-email" className="text-right">Email</Label>
+                  <Input
+                    id="help-email"
+                    name="email"
+                    type="email"
+                    value={helpData.email}
+                    onChange={handleHelpChange}
+                    className="col-span-3"
+                    placeholder="Your email address"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="help-workId" className="text-right">Work ID</Label>
+                  <Input
+                    id="help-workId"
+                    name="workId"
+                    value={helpData.workId}
+                    onChange={handleHelpChange}
+                    className="col-span-3"
+                    placeholder="Your work ID (if known)"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="help-message" className="text-right">Message</Label>
+                  <Textarea
+                    id="help-message"
+                    name="message"
+                    value={helpData.message}
+                    onChange={handleHelpChange}
+                    className="col-span-3"
+                    placeholder="Describe the issue you're experiencing"
+                    rows={4}
+                  />
+                </div>
+                
+                <DialogFooter>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setHelpDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit"
+                    disabled={helpRequestMutation.isPending}
+                  >
+                    {helpRequestMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Request'
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
