@@ -1,0 +1,555 @@
+import {
+  users, agentGroups, groupMembers, attendanceTimeframes, attendance,
+  clients, reports, messages, loginHelpRequests, activityLogs,
+  type User, type InsertUser, type AgentGroup, type InsertAgentGroup,
+  type GroupMember, type InsertGroupMember, type AttendanceTimeframe,
+  type InsertAttendanceTimeframe, type Attendance, type InsertAttendance,
+  type Client, type InsertClient, type Report, type InsertReport,
+  type Message, type InsertMessage, type LoginHelpRequest,
+  type InsertLoginHelpRequest, type ActivityLog, type InsertActivityLog
+} from "@shared/schema";
+
+// Storage interface for all CRUD operations
+export interface IStorage {
+  // User operations
+  getUserById(id: number): Promise<User | undefined>;
+  getUserByWorkId(workId: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUsersByRole(role: string): Promise<User[]>;
+  getUsersByManagerId(managerId: number): Promise<User[]>;
+  getUsersBySalesStaffId(salesStaffId: number): Promise<User[]>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
+  disableUser(id: number): Promise<User | undefined>;
+  enableUser(id: number): Promise<User | undefined>;
+
+  // Agent group operations
+  getAgentGroupById(id: number): Promise<AgentGroup | undefined>;
+  getAgentGroupsBySalesStaffId(salesStaffId: number): Promise<AgentGroup[]>;
+  createAgentGroup(group: InsertAgentGroup): Promise<AgentGroup>;
+  updateAgentGroup(id: number, group: Partial<InsertAgentGroup>): Promise<AgentGroup | undefined>;
+  deleteAgentGroup(id: number): Promise<boolean>;
+
+  // Group member operations
+  addMemberToGroup(member: InsertGroupMember): Promise<GroupMember>;
+  removeMemberFromGroup(groupId: number, userId: number): Promise<boolean>;
+  getGroupMembers(groupId: number): Promise<GroupMember[]>;
+  getUserGroups(userId: number): Promise<GroupMember[]>;
+
+  // Attendance timeframe operations
+  createAttendanceTimeframe(timeframe: InsertAttendanceTimeframe): Promise<AttendanceTimeframe>;
+  getAttendanceTimeframesBySalesStaffId(salesStaffId: number): Promise<AttendanceTimeframe[]>;
+  updateAttendanceTimeframe(id: number, timeframe: Partial<InsertAttendanceTimeframe>): Promise<AttendanceTimeframe | undefined>;
+  deleteAttendanceTimeframe(id: number): Promise<boolean>;
+
+  // Attendance operations
+  markAttendance(attendance: InsertAttendance): Promise<Attendance>;
+  getUserAttendance(userId: number): Promise<Attendance[]>;
+  getUserAttendanceByDate(userId: number, date: Date): Promise<Attendance | undefined>;
+  excuseAbsence(id: number, excusedById: number, reason: string): Promise<Attendance | undefined>;
+  getAttendanceBySalesStaffId(salesStaffId: number): Promise<Attendance[]>;
+
+  // Client operations
+  createClient(client: InsertClient): Promise<Client>;
+  getClientsByAgentId(agentId: number): Promise<Client[]>;
+  getClientsByTeamLeaderId(teamLeaderId: number): Promise<Client[]>;
+  getClientsBySalesStaffId(salesStaffId: number): Promise<Client[]>;
+  updateClient(id: number, client: Partial<InsertClient>): Promise<Client | undefined>;
+  deleteClient(id: number): Promise<boolean>;
+
+  // Report operations
+  createReport(report: InsertReport): Promise<Report>;
+  getReportsByUserId(userId: number): Promise<Report[]>;
+  getReportsByTeamLeaderId(teamLeaderId: number): Promise<Report[]>;
+  getReportsBySalesStaffId(salesStaffId: number): Promise<Report[]>;
+  getReportsByManagerId(managerId: number): Promise<Report[]>;
+  updateReport(id: number, report: Partial<InsertReport>): Promise<Report | undefined>;
+  deleteReport(id: number): Promise<boolean>;
+
+  // Message operations
+  sendMessage(message: InsertMessage): Promise<Message>;
+  getMessagesBySenderId(senderId: number): Promise<Message[]>;
+  getMessagesByReceiverId(receiverId: number): Promise<Message[]>;
+  getConversation(user1Id: number, user2Id: number): Promise<Message[]>;
+  markMessageAsRead(id: number): Promise<Message | undefined>;
+
+  // Login help request operations
+  createLoginHelpRequest(request: InsertLoginHelpRequest): Promise<LoginHelpRequest>;
+  getLoginHelpRequests(): Promise<LoginHelpRequest[]>;
+  resolveLoginHelpRequest(id: number, resolvedById: number): Promise<LoginHelpRequest | undefined>;
+  deleteLoginHelpRequest(id: number): Promise<boolean>;
+
+  // Activity log operations
+  logActivity(log: InsertActivityLog): Promise<ActivityLog>;
+  getActivityLogsByUserId(userId: number): Promise<ActivityLog[]>;
+  getRecentActivityLogs(limit: number): Promise<ActivityLog[]>;
+}
+
+// In-memory implementation of the storage interface
+export class MemStorage implements IStorage {
+  private users: Map<number, User>;
+  private agentGroups: Map<number, AgentGroup>;
+  private groupMembers: Map<number, GroupMember>;
+  private attendanceTimeframes: Map<number, AttendanceTimeframe>;
+  private attendanceRecords: Map<number, Attendance>;
+  private clients: Map<number, Client>;
+  private reports: Map<number, Report>;
+  private messages: Map<number, Message>;
+  private loginHelpRequests: Map<number, LoginHelpRequest>;
+  private activityLogs: Map<number, ActivityLog>;
+
+  private currentUserId: number;
+  private currentAgentGroupId: number;
+  private currentGroupMemberId: number;
+  private currentAttendanceTimeframeId: number;
+  private currentAttendanceId: number;
+  private currentClientId: number;
+  private currentReportId: number;
+  private currentMessageId: number;
+  private currentLoginHelpRequestId: number;
+  private currentActivityLogId: number;
+
+  constructor() {
+    this.users = new Map();
+    this.agentGroups = new Map();
+    this.groupMembers = new Map();
+    this.attendanceTimeframes = new Map();
+    this.attendanceRecords = new Map();
+    this.clients = new Map();
+    this.reports = new Map();
+    this.messages = new Map();
+    this.loginHelpRequests = new Map();
+    this.activityLogs = new Map();
+
+    this.currentUserId = 1;
+    this.currentAgentGroupId = 1;
+    this.currentGroupMemberId = 1;
+    this.currentAttendanceTimeframeId = 1;
+    this.currentAttendanceId = 1;
+    this.currentClientId = 1;
+    this.currentReportId = 1;
+    this.currentMessageId = 1;
+    this.currentLoginHelpRequestId = 1;
+    this.currentActivityLogId = 1;
+
+    // Create default admin user
+    this.createUser({
+      workId: 'ADMIN-001',
+      email: 'admin@example.com',
+      firstName: 'System',
+      lastName: 'Admin',
+      nationalId: 'ADM12345678',
+      phoneNumber: '+250781234567',
+      role: 'admin',
+      status: 'active'
+    });
+  }
+
+  // User operations
+  async getUserById(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+
+  async getUserByWorkId(workId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.workId === workId
+    );
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(
+      (user) => user.email === email
+    );
+  }
+
+  async getUsersByRole(role: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.role === role
+    );
+  }
+
+  async getUsersByManagerId(managerId: number): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.managerId === managerId
+    );
+  }
+
+  async getUsersBySalesStaffId(salesStaffId: number): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.salesStaffId === salesStaffId
+    );
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const id = this.currentUserId++;
+    const user: User = { ...userData, id, createdAt: new Date() };
+    this.users.set(id, user);
+    return user;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const user = await this.getUserById(id);
+    if (!user) return undefined;
+
+    const updatedUser = { ...user, ...userData };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  async disableUser(id: number): Promise<User | undefined> {
+    const user = await this.getUserById(id);
+    if (!user) return undefined;
+
+    const updatedUser = { ...user, status: 'disabled' as const };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async enableUser(id: number): Promise<User | undefined> {
+    const user = await this.getUserById(id);
+    if (!user) return undefined;
+
+    const updatedUser = { ...user, status: 'active' as const };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  // Agent group operations
+  async getAgentGroupById(id: number): Promise<AgentGroup | undefined> {
+    return this.agentGroups.get(id);
+  }
+
+  async getAgentGroupsBySalesStaffId(salesStaffId: number): Promise<AgentGroup[]> {
+    return Array.from(this.agentGroups.values()).filter(
+      (group) => group.salesStaffId === salesStaffId
+    );
+  }
+
+  async createAgentGroup(groupData: InsertAgentGroup): Promise<AgentGroup> {
+    const id = this.currentAgentGroupId++;
+    const group: AgentGroup = { ...groupData, id, createdAt: new Date() };
+    this.agentGroups.set(id, group);
+    return group;
+  }
+
+  async updateAgentGroup(id: number, groupData: Partial<InsertAgentGroup>): Promise<AgentGroup | undefined> {
+    const group = await this.getAgentGroupById(id);
+    if (!group) return undefined;
+
+    const updatedGroup = { ...group, ...groupData };
+    this.agentGroups.set(id, updatedGroup);
+    return updatedGroup;
+  }
+
+  async deleteAgentGroup(id: number): Promise<boolean> {
+    return this.agentGroups.delete(id);
+  }
+
+  // Group member operations
+  async addMemberToGroup(memberData: InsertGroupMember): Promise<GroupMember> {
+    const id = this.currentGroupMemberId++;
+    const member: GroupMember = { ...memberData, id };
+    this.groupMembers.set(id, member);
+    return member;
+  }
+
+  async removeMemberFromGroup(groupId: number, userId: number): Promise<boolean> {
+    const memberToRemove = Array.from(this.groupMembers.values()).find(
+      (member) => member.groupId === groupId && member.userId === userId
+    );
+    if (!memberToRemove) return false;
+    return this.groupMembers.delete(memberToRemove.id);
+  }
+
+  async getGroupMembers(groupId: number): Promise<GroupMember[]> {
+    return Array.from(this.groupMembers.values()).filter(
+      (member) => member.groupId === groupId
+    );
+  }
+
+  async getUserGroups(userId: number): Promise<GroupMember[]> {
+    return Array.from(this.groupMembers.values()).filter(
+      (member) => member.userId === userId
+    );
+  }
+
+  // Attendance timeframe operations
+  async createAttendanceTimeframe(timeframeData: InsertAttendanceTimeframe): Promise<AttendanceTimeframe> {
+    const id = this.currentAttendanceTimeframeId++;
+    const timeframe: AttendanceTimeframe = { ...timeframeData, id, createdAt: new Date() };
+    this.attendanceTimeframes.set(id, timeframe);
+    return timeframe;
+  }
+
+  async getAttendanceTimeframesBySalesStaffId(salesStaffId: number): Promise<AttendanceTimeframe[]> {
+    return Array.from(this.attendanceTimeframes.values()).filter(
+      (timeframe) => timeframe.salesStaffId === salesStaffId
+    );
+  }
+
+  async updateAttendanceTimeframe(id: number, timeframeData: Partial<InsertAttendanceTimeframe>): Promise<AttendanceTimeframe | undefined> {
+    const timeframe = this.attendanceTimeframes.get(id);
+    if (!timeframe) return undefined;
+
+    const updatedTimeframe = { ...timeframe, ...timeframeData };
+    this.attendanceTimeframes.set(id, updatedTimeframe);
+    return updatedTimeframe;
+  }
+
+  async deleteAttendanceTimeframe(id: number): Promise<boolean> {
+    return this.attendanceTimeframes.delete(id);
+  }
+
+  // Attendance operations
+  async markAttendance(attendanceData: InsertAttendance): Promise<Attendance> {
+    const id = this.currentAttendanceId++;
+    const attendanceRecord: Attendance = { ...attendanceData, id };
+    this.attendanceRecords.set(id, attendanceRecord);
+    return attendanceRecord;
+  }
+
+  async getUserAttendance(userId: number): Promise<Attendance[]> {
+    return Array.from(this.attendanceRecords.values()).filter(
+      (record) => record.userId === userId
+    );
+  }
+
+  async getUserAttendanceByDate(userId: number, date: Date): Promise<Attendance | undefined> {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return Array.from(this.attendanceRecords.values()).find(record => {
+      const recordDate = new Date(record.date);
+      recordDate.setHours(0, 0, 0, 0);
+      return record.userId === userId && recordDate.getTime() === targetDate.getTime();
+    });
+  }
+
+  async excuseAbsence(id: number, excusedById: number, reason: string): Promise<Attendance | undefined> {
+    const attendance = this.attendanceRecords.get(id);
+    if (!attendance) return undefined;
+
+    const updatedAttendance = { 
+      ...attendance, 
+      isExcused: true, 
+      excusedById, 
+      excuseReason: reason 
+    };
+    this.attendanceRecords.set(id, updatedAttendance);
+    return updatedAttendance;
+  }
+
+  async getAttendanceBySalesStaffId(salesStaffId: number): Promise<Attendance[]> {
+    const agents = await this.getUsersBySalesStaffId(salesStaffId);
+    const agentIds = agents.map(agent => agent.id);
+    
+    return Array.from(this.attendanceRecords.values()).filter(
+      (record) => agentIds.includes(record.userId)
+    );
+  }
+
+  // Client operations
+  async createClient(clientData: InsertClient): Promise<Client> {
+    const id = this.currentClientId++;
+    const client: Client = { ...clientData, id, createdAt: new Date() };
+    this.clients.set(id, client);
+    return client;
+  }
+
+  async getClientsByAgentId(agentId: number): Promise<Client[]> {
+    return Array.from(this.clients.values()).filter(
+      (client) => client.agentId === agentId
+    );
+  }
+
+  async getClientsByTeamLeaderId(teamLeaderId: number): Promise<Client[]> {
+    // Get all agent groups where this user is a team leader
+    const agentGroups = Array.from(this.agentGroups.values()).filter(
+      (group) => group.teamLeaderId === teamLeaderId
+    );
+    
+    // Get all group members in these groups
+    const groupIds = agentGroups.map(group => group.id);
+    const groupMembersArray = Array.from(this.groupMembers.values()).filter(
+      (member) => groupIds.includes(member.groupId)
+    );
+    
+    // Get all agent IDs
+    const agentIds = groupMembersArray.map(member => member.userId);
+    
+    // Get all clients for these agents
+    return Array.from(this.clients.values()).filter(
+      (client) => agentIds.includes(client.agentId)
+    );
+  }
+
+  async getClientsBySalesStaffId(salesStaffId: number): Promise<Client[]> {
+    // Get all agents under this sales staff
+    const agents = await this.getUsersBySalesStaffId(salesStaffId);
+    const agentIds = agents.map(agent => agent.id);
+    
+    // Get all clients for these agents
+    return Array.from(this.clients.values()).filter(
+      (client) => agentIds.includes(client.agentId)
+    );
+  }
+
+  async updateClient(id: number, clientData: Partial<InsertClient>): Promise<Client | undefined> {
+    const client = this.clients.get(id);
+    if (!client) return undefined;
+
+    const updatedClient = { ...client, ...clientData };
+    this.clients.set(id, updatedClient);
+    return updatedClient;
+  }
+
+  async deleteClient(id: number): Promise<boolean> {
+    return this.clients.delete(id);
+  }
+
+  // Report operations
+  async createReport(reportData: InsertReport): Promise<Report> {
+    const id = this.currentReportId++;
+    const report: Report = { ...reportData, id, submissionDate: new Date() };
+    this.reports.set(id, report);
+    return report;
+  }
+
+  async getReportsByUserId(userId: number): Promise<Report[]> {
+    return Array.from(this.reports.values()).filter(
+      (report) => report.userId === userId
+    );
+  }
+
+  async getReportsByTeamLeaderId(teamLeaderId: number): Promise<Report[]> {
+    return Array.from(this.reports.values()).filter(
+      (report) => report.teamLeaderId === teamLeaderId
+    );
+  }
+
+  async getReportsBySalesStaffId(salesStaffId: number): Promise<Report[]> {
+    return Array.from(this.reports.values()).filter(
+      (report) => report.salesStaffId === salesStaffId
+    );
+  }
+
+  async getReportsByManagerId(managerId: number): Promise<Report[]> {
+    return Array.from(this.reports.values()).filter(
+      (report) => report.managerId === managerId
+    );
+  }
+
+  async updateReport(id: number, reportData: Partial<InsertReport>): Promise<Report | undefined> {
+    const report = this.reports.get(id);
+    if (!report) return undefined;
+
+    const updatedReport = { ...report, ...reportData };
+    this.reports.set(id, updatedReport);
+    return updatedReport;
+  }
+
+  async deleteReport(id: number): Promise<boolean> {
+    return this.reports.delete(id);
+  }
+
+  // Message operations
+  async sendMessage(messageData: InsertMessage): Promise<Message> {
+    const id = this.currentMessageId++;
+    const message: Message = { ...messageData, id, createdAt: new Date(), isRead: false };
+    this.messages.set(id, message);
+    return message;
+  }
+
+  async getMessagesBySenderId(senderId: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => message.senderId === senderId
+    );
+  }
+
+  async getMessagesByReceiverId(receiverId: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => message.receiverId === receiverId
+    );
+  }
+
+  async getConversation(user1Id: number, user2Id: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(
+      (message) => 
+        (message.senderId === user1Id && message.receiverId === user2Id) ||
+        (message.senderId === user2Id && message.receiverId === user1Id)
+    ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  }
+
+  async markMessageAsRead(id: number): Promise<Message | undefined> {
+    const message = this.messages.get(id);
+    if (!message) return undefined;
+
+    const updatedMessage = { ...message, isRead: true };
+    this.messages.set(id, updatedMessage);
+    return updatedMessage;
+  }
+
+  // Login help request operations
+  async createLoginHelpRequest(requestData: InsertLoginHelpRequest): Promise<LoginHelpRequest> {
+    const id = this.currentLoginHelpRequestId++;
+    const request: LoginHelpRequest = { 
+      ...requestData, 
+      id, 
+      status: 'pending', 
+      createdAt: new Date(),
+      resolvedById: null as any,
+      resolvedAt: null as any
+    };
+    this.loginHelpRequests.set(id, request);
+    return request;
+  }
+
+  async getLoginHelpRequests(): Promise<LoginHelpRequest[]> {
+    return Array.from(this.loginHelpRequests.values());
+  }
+
+  async resolveLoginHelpRequest(id: number, resolvedById: number): Promise<LoginHelpRequest | undefined> {
+    const request = this.loginHelpRequests.get(id);
+    if (!request) return undefined;
+
+    const updatedRequest = { 
+      ...request, 
+      status: 'resolved', 
+      resolvedById, 
+      resolvedAt: new Date() 
+    };
+    this.loginHelpRequests.set(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  async deleteLoginHelpRequest(id: number): Promise<boolean> {
+    return this.loginHelpRequests.delete(id);
+  }
+
+  // Activity log operations
+  async logActivity(logData: InsertActivityLog): Promise<ActivityLog> {
+    const id = this.currentActivityLogId++;
+    const log: ActivityLog = { ...logData, id, createdAt: new Date() };
+    this.activityLogs.set(id, log);
+    return log;
+  }
+
+  async getActivityLogsByUserId(userId: number): Promise<ActivityLog[]> {
+    return Array.from(this.activityLogs.values())
+      .filter(log => log.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getRecentActivityLogs(limit: number): Promise<ActivityLog[]> {
+    return Array.from(this.activityLogs.values())
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit);
+  }
+}
+
+export const storage = new MemStorage();
