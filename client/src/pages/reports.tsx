@@ -97,6 +97,28 @@ export default function ReportsPage() {
     enabled: !!user,
   });
 
+  const createReportMutation = useMutation({
+    mutationFn: async (reportData: any) => {
+      const response = await apiRequest('POST', '/api/reports', reportData);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Report submitted',
+        description: 'Your report has been submitted successfully.',
+      });
+      setDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/reports'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to submit report. Please try again.',
+        variant: 'destructive',
+      });
+    },
+  });
+
   const approveReportMutation = useMutation({
     mutationFn: async (reportId: number) => {
       const response = await apiRequest('PUT', `/api/reports/${reportId}/approve`);
@@ -117,6 +139,15 @@ export default function ReportsPage() {
       });
     },
   });
+  
+  const handleCreateReport = (data: any) => {
+    // Add userId to the report data
+    const reportData = {
+      ...data,
+      userId: user?.id
+    };
+    createReportMutation.mutate(reportData);
+  };
 
   const columns: ColumnDef<Report>[] = [
     {
