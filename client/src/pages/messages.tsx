@@ -6,7 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import RoleGuard from '@/components/common/RoleGuard';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import RoleGuard from '@/components/common/RoleGuard';
 import { User } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
