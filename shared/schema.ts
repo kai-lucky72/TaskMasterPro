@@ -17,7 +17,7 @@ export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   workId: text('work_id').notNull().unique(),
   email: text('email').notNull().unique(),
-  password: text('password').notNull(), // Storing hashed password
+  password: text('password'), // Optional password field for future use
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   nationalId: text('national_id').notNull(),
@@ -128,7 +128,10 @@ export const activityLogs = pgTable('activity_logs', {
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users)
-  .omit({ id: true, createdAt: true });
+  .omit({ id: true, createdAt: true })
+  .extend({
+    password: z.string().optional()
+  });
 
 export const insertAgentGroupSchema = createInsertSchema(agentGroups)
   .omit({ id: true, createdAt: true });

@@ -194,13 +194,7 @@ export function setupAuth(app: Express) {
         userData.workId = generateId(role);
       }
       
-      // Hash the password if provided
-      if (userData.password) {
-        userData.password = await storage.hashPassword(userData.password);
-      } else {
-        // Set a default password if none is provided
-        userData.password = await storage.hashPassword('password123');
-      }
+      // No need to hash passwords as we authenticate with workId + email only
       
       // Validate user data with Zod schema
       const validationResult = insertUserSchema.safeParse(userData);
