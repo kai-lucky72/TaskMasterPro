@@ -651,6 +651,99 @@ export class DatabaseStorage implements IStorage {
       pool,
       createTableIfMissing: true,
     });
+    
+    // Initialize database with test users if needed
+    this.createInitialUsers();
+  }
+  
+  private async createInitialUsers() {
+    try {
+      // Check if we already have an admin user
+      const adminExists = await this.getUserByWorkId('ADMIN-001');
+      
+      if (!adminExists) {
+        console.log('Creating initial test users...');
+        
+        // Create admin user
+        const admin = await this.createUser({
+          workId: 'ADMIN-001',
+          email: 'admin@example.com',
+          firstName: 'Admin',
+          lastName: 'User',
+          nationalId: 'AD123456',
+          phoneNumber: '+250700000001',
+          role: 'admin',
+          status: 'active',
+          createdById: null,
+          managerId: null,
+          salesStaffId: null
+        });
+        
+        // Create manager user
+        const manager = await this.createUser({
+          workId: 'MGR-001',
+          email: 'manager@example.com',
+          firstName: 'Manager',
+          lastName: 'User',
+          nationalId: 'MG123456',
+          phoneNumber: '+250700000002',
+          role: 'manager',
+          status: 'active',
+          createdById: admin.id,
+          managerId: null,
+          salesStaffId: null
+        });
+        
+        // Create sales staff user
+        const salesStaff = await this.createUser({
+          workId: 'STAFF-001',
+          email: 'staff@example.com',
+          firstName: 'Sales',
+          lastName: 'Staff',
+          nationalId: 'SS123456',
+          phoneNumber: '+250700000003',
+          role: 'sales_staff',
+          status: 'active',
+          createdById: manager.id,
+          managerId: manager.id,
+          salesStaffId: null
+        });
+        
+        // Create team leader
+        await this.createUser({
+          workId: 'LEAD-001',
+          email: 'leader@example.com',
+          firstName: 'Team',
+          lastName: 'Leader',
+          nationalId: 'TL123456',
+          phoneNumber: '+250700000004',
+          role: 'team_leader',
+          status: 'active',
+          createdById: salesStaff.id,
+          managerId: null,
+          salesStaffId: salesStaff.id
+        });
+        
+        // Create agent
+        await this.createUser({
+          workId: 'AGENT-001',
+          email: 'agent@example.com',
+          firstName: 'Sales',
+          lastName: 'Agent',
+          nationalId: 'SA123456',
+          phoneNumber: '+250700000005',
+          role: 'sales_agent',
+          status: 'active',
+          createdById: salesStaff.id,
+          managerId: null,
+          salesStaffId: salesStaff.id
+        });
+        
+        console.log('Initial users created successfully!');
+      }
+    } catch (error) {
+      console.error('Error creating initial users:', error);
+    }
   }
 
   // User operations

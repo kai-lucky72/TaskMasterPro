@@ -17,6 +17,7 @@ export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   workId: text('work_id').notNull().unique(),
   email: text('email').notNull().unique(),
+  password: text('password').notNull(), // Storing hashed password
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   nationalId: text('national_id').notNull(),
@@ -160,6 +161,7 @@ export const insertActivityLogSchema = createInsertSchema(activityLogs)
 export const loginSchema = z.object({
   workId: z.string().min(1, "Work ID is required"),
   email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export const helpRequestSchema = z.object({
