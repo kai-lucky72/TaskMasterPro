@@ -492,8 +492,8 @@ export default function AgentDashboard() {
       
       {/* Clients & Reports Tabs */}
       <Card className="shadow-sm border border-slate-200 mb-8">
-        <CardHeader className="pb-2 border-b">
-          <Tabs defaultValue="clients">
+        <Tabs defaultValue="clients">
+          <CardHeader className="pb-2 border-b">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg">Clients & Reports</CardTitle>
               <TabsList>
@@ -504,32 +504,32 @@ export default function AgentDashboard() {
                 )}
               </TabsList>
             </div>
-          </Tabs>
-        </CardHeader>
-        
-        <TabsContent value="clients" className="m-0">
-          <ClientList 
-            clients={clientsData?.clients} 
-            isLoading={clientsLoading}
-            onAddNew={() => setShowAddClient(true)}
-          />
-        </TabsContent>
-        
-        <TabsContent value="reports" className="m-0">
-          <ReportList 
-            reports={reportsData?.reports} 
-            isLoading={reportsLoading}
-            onAddNew={() => setShowAddReport(true)}
-          />
-        </TabsContent>
-        
-        {user?.role === 'team_leader' && (
-          <TabsContent value="teamClients" className="m-0">
-            <div className="p-6 text-center text-slate-500">
-              <p>Team clients view will be implemented soon.</p>
-            </div>
+          </CardHeader>
+          
+          <TabsContent value="clients" className="m-0">
+            <ClientList 
+              clients={clientsData?.clients} 
+              isLoading={clientsLoading}
+              onAddNew={() => setShowAddClient(true)}
+            />
           </TabsContent>
-        )}
+          
+          <TabsContent value="reports" className="m-0">
+            <ReportList 
+              reports={reportsData?.reports} 
+              isLoading={reportsLoading}
+              onAddNew={() => setShowAddReport(true)}
+            />
+          </TabsContent>
+          
+          {user?.role === 'team_leader' && (
+            <TabsContent value="teamClients" className="m-0">
+              <div className="p-6 text-center text-slate-500">
+                <p>Team clients view will be implemented soon.</p>
+              </div>
+            </TabsContent>
+          )}
+        </Tabs>
       </Card>
       
       {/* Quick Actions */}
