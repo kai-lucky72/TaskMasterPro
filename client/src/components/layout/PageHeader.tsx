@@ -1,20 +1,23 @@
-import { cn } from "@/lib/utils";
+import { ReactNode } from 'react';
 
 interface PageHeaderProps {
   title: string;
   description?: string;
-  className?: string;
-  actions?: React.ReactNode;
+  actions?: ReactNode;
 }
 
-export default function PageHeader({ title, description, className, actions }: PageHeaderProps) {
+const PageHeader = ({ title, description, actions }: PageHeaderProps) => {
   return (
-    <div className={cn("mb-6 flex items-center justify-between", className)}>
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">{title}</h2>
-        {description && <p className="text-slate-500">{description}</p>}
+    <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 sm:mb-0">
+        <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+        {description && (
+          <p className="mt-1 text-base text-gray-600">{description}</p>
+        )}
       </div>
-      {actions && <div className="flex items-center space-x-3">{actions}</div>}
+      {actions && <div className="flex-shrink-0">{actions}</div>}
     </div>
   );
-}
+};
+
+export default PageHeader;
