@@ -50,17 +50,19 @@ export function setupAuth(app: Express) {
   // Configure login strategy
   passport.use(new LocalStrategy({
     usernameField: 'workId',
-    passwordField: 'email',
-  }, async (workId, email, done) => {
+    passwordField: 'password',
+  }, async (workId, password, done) => {
     try {
-      // For this simple login, we're using workId and email instead of passwords
+      // Find user by work ID
       const user = await storage.getUserByWorkId(workId);
       if (!user) {
-        return done(null, false, { message: 'Invalid work ID or email' });
+        return done(null, false, { message: 'Invalid work ID or password' });
       }
       
-      if (user.email !== email) {
-        return done(null, false, { message: 'Invalid work ID or email' });
+      // Verify password
+      const isPasswordValid = await storage.comparePasswords(password, user.password);
+      if (!isPasswordValid) {
+        return done(null, false, { message: 'Invalid work ID or password' });
       }
 
       if (user.status === 'disabled') {
@@ -192,6 +194,14 @@ export function setupAuth(app: Express) {
       if (!userData.workId) {
         const role = userData.role.toUpperCase();
         userData.workId = generateId(role);
+      }
+      
+      // Hash the password if provided
+      if (userData.password) {
+        userData.password = await storage.hashPassword(userData.password);
+      } else {
+        // Set a default password if none is provided
+        userData.password = await storage.hashPassword('password123');
       }
       
       // Validate user data with Zod schema

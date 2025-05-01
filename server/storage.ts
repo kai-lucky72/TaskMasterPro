@@ -640,8 +640,11 @@ import session from 'express-session';
 import connectPg from 'connect-pg-simple';
 import { eq, and, desc, asc, isNull, or, inArray } from 'drizzle-orm';
 import { db, pool } from './db';
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
 
 const PostgresSessionStore = connectPg(session);
+const scryptAsync = promisify(scrypt);
 
 export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
@@ -664,10 +667,14 @@ export class DatabaseStorage implements IStorage {
       if (!adminExists) {
         console.log('Creating initial test users...');
         
+        // Hash a default password for testing
+        const defaultPassword = await this.hashPassword('password123');
+        
         // Create admin user
         const admin = await this.createUser({
           workId: 'ADMIN-001',
           email: 'admin@example.com',
+          password: defaultPassword,
           firstName: 'Admin',
           lastName: 'User',
           nationalId: 'AD123456',
@@ -683,6 +690,7 @@ export class DatabaseStorage implements IStorage {
         const manager = await this.createUser({
           workId: 'MGR-001',
           email: 'manager@example.com',
+          password: defaultPassword,
           firstName: 'Manager',
           lastName: 'User',
           nationalId: 'MG123456',
@@ -698,6 +706,7 @@ export class DatabaseStorage implements IStorage {
         const salesStaff = await this.createUser({
           workId: 'STAFF-001',
           email: 'staff@example.com',
+          password: defaultPassword,
           firstName: 'Sales',
           lastName: 'Staff',
           nationalId: 'SS123456',
@@ -713,6 +722,7 @@ export class DatabaseStorage implements IStorage {
         await this.createUser({
           workId: 'LEAD-001',
           email: 'leader@example.com',
+          password: defaultPassword,
           firstName: 'Team',
           lastName: 'Leader',
           nationalId: 'TL123456',
@@ -728,6 +738,7 @@ export class DatabaseStorage implements IStorage {
         await this.createUser({
           workId: 'AGENT-001',
           email: 'agent@example.com',
+          password: defaultPassword,
           firstName: 'Sales',
           lastName: 'Agent',
           nationalId: 'SA123456',
@@ -744,6 +755,21 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error creating initial users:', error);
     }
+  }
+  
+  // Password hashing utility
+  async hashPassword(password: string) {
+    const salt = randomBytes(16).toString('hex');
+    const buf = await scryptAsync(password, salt, 64) as Buffer;
+    return `${buf.toString('hex')}.${salt}`;
+  }
+  
+  // Password verification utility
+  async comparePasswords(supplied: string, stored: string) {
+    const [hashed, salt] = stored.split('.');
+    const hashedBuf = Buffer.from(hashed, 'hex');
+    const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+    return timingSafeEqual(hashedBuf, suppliedBuf);
   }
 
   // User operations
