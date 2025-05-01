@@ -98,24 +98,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: user.role,
         status: user.status
       };
-      
-      // Log successful login
-      await storage.logActivity({
-        userId: user.id,
-        action: 'LOGIN_SUCCESS',
-        details: 'User logged in successfully'
-      });
-      
-      return res.status(200).json({
-        message: 'Login successful',
-        user: {
-          id: user.id,
-          workId: user.workId,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role
+
+      // Save the session before responding
+      req.session.save(async (err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: 'Session error' });
         }
+
+        // Log successful login
+        await storage.logActivity({
+          userId: user.id,
+          action: 'LOGIN_SUCCESS',
+          details: 'User logged in successfully'
+        });
+        
+        // Send user info back to client
+        return res.status(200).json({
+          message: 'Login successful',
+          user: {
+            id: user.id,
+            workId: user.workId,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            status: user.status
+          }
+        });
       });
     } catch (error) {
       return res.status(400).json(handleZodError(error));

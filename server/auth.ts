@@ -47,31 +47,7 @@ export function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  // Configure login strategy
-  passport.use(new LocalStrategy({
-    usernameField: 'workId',
-    passwordField: 'email',
-  }, async (workId, email, done) => {
-    try {
-      // For this simple login, we're using workId and email instead of passwords
-      const user = await storage.getUserByWorkId(workId);
-      if (!user) {
-        return done(null, false, { message: 'Invalid work ID or email' });
-      }
-      
-      if (user.email !== email) {
-        return done(null, false, { message: 'Invalid work ID or email' });
-      }
-
-      if (user.status === 'disabled') {
-        return done(null, false, { message: 'Account is disabled' });
-      }
-
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }));
+  // We're not using Passport's LocalStrategy as we implemented auth directly in routes.ts
 
   passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -86,41 +62,7 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // Define authentication routes
-  app.post('/api/auth/login', (req, res, next) => {
-    passport.authenticate('local', (err: Error, user: User, info: any) => {
-      if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ message: info.message || 'Authentication failed' });
-      }
-
-      req.logIn(user, async (err) => {
-        if (err) return next(err);
-        
-        // Log activity
-        await storage.logActivity({
-          userId: user.id,
-          action: 'login',
-          details: `User logged in from ${req.ip}`,
-          createdAt: new Date()
-        });
-
-        // Return the user in the expected format for the client
-        return res.status(200).json({ 
-          message: 'Login successful', 
-          user: {
-            id: user.id,
-            workId: user.workId,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            status: user.status
-          }
-        });
-      });
-    })(req, res, next);
-  });
+  // Login routes are defined in routes.ts
 
   app.post('/api/auth/logout', (req, res, next) => {
     const userId = req.user?.id;
