@@ -1,45 +1,37 @@
 import { ReactNode } from 'react';
 import { Redirect } from 'wouter';
 import { useAuth } from '@/context/AuthContext';
-import { Loader2 } from 'lucide-react';
 import { UserRole } from '@/types';
+import { Loader2 } from 'lucide-react';
 
 interface RoleGuardProps {
   children: ReactNode;
   allowedRoles?: UserRole[];
-  redirect?: string;
+  redirect: string;
 }
 
-const RoleGuard = ({
-  children,
-  allowedRoles,
-  redirect = '/login',
-}: RoleGuardProps) => {
+const RoleGuard = ({ children, allowedRoles, redirect }: RoleGuardProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="h-screen w-full flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  // If not authenticated, redirect to login
+  // If no user, redirect to login
   if (!user) {
     return <Redirect to={redirect} />;
   }
 
-  // If specific roles are required, check if the user has one of them
-  if (allowedRoles && allowedRoles.length > 0) {
-    const hasRequiredRole = allowedRoles.includes(user.role as UserRole);
-    
-    if (!hasRequiredRole) {
-      // Redirect to dashboard if they don't have permission
-      return <Redirect to="/" />;
-    }
+  // If allowedRoles is defined, check if user has permission
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Redirect to="/" />;
   }
 
+  // User has permission, render the children
   return <>{children}</>;
 };
 

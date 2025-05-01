@@ -1,17 +1,11 @@
-export type UserRole = 
-  | 'admin' 
-  | 'manager' 
-  | 'sales_staff' 
-  | 'team_leader' 
-  | 'individual_agent' 
-  | 'sales_agent';
+export type UserRole = 'admin' | 'manager' | 'sales_staff' | 'team_leader' | 'individual_agent' | 'sales_agent';
 
 export type UserStatus = 'active' | 'disabled';
 
 export interface User {
   id: number;
-  workId: string;
   email: string;
+  workId: string;
   firstName: string;
   lastName: string;
   nationalId: string;
@@ -32,33 +26,13 @@ export interface Team {
   teamLeaderId: number | null;
 }
 
-export interface Client {
-  id: number;
-  name: string;
-  email: string | null;
-  nationalId: string;
-  phoneNumber: string;
-  createdAt: Date;
-  insuranceType: 
-    | 'education' 
-    | 'intego' 
-    | 'family_insurance' 
-    | 'epi' 
-    | 'nkunganire_shoferi' 
-    | 'umurage_amashuri' 
-    | 'ikimina' 
-    | 'others';
-  paymentMethod: 'salary_deduction' | 'momo';
-  amount: number;
-  agentId: number;
-  notes: string | null;
-}
+export type AttendanceSector = 'health' | 'admin_staff' | 'private_sectors' | 'other';
 
 export interface Attendance {
   id: number;
   userId: number;
   date: Date;
-  sector: 'health' | 'admin_staff' | 'private_sectors' | 'other' | null;
+  sector: AttendanceSector | null;
   location: string | null;
   isPresent: boolean | null;
   isExcused: boolean | null;
@@ -66,34 +40,50 @@ export interface Attendance {
   excuseReason: string | null;
 }
 
+export type InsuranceType = 
+  | 'education'
+  | 'intego'
+  | 'family_insurance'
+  | 'epi'
+  | 'nkunganire_shoferi'
+  | 'umurage_amashuri'
+  | 'ikimina'
+  | 'others';
+
+export type PaymentMethod = 'salary_deduction' | 'momo';
+
+export interface Client {
+  id: number;
+  name: string;
+  email: string | null;
+  nationalId: string;
+  phoneNumber: string;
+  createdAt: Date;
+  insuranceType: InsuranceType;
+  paymentMethod: PaymentMethod;
+  amount: number;
+  agentId: number;
+  notes: string | null;
+}
+
 export interface HelpRequest {
   id: number;
   userId: number;
-  submissionDate: Date;
   title: string;
   content: string;
+  submissionDate: Date;
   status: string;
   managerId: number | null;
   salesStaffId: number | null;
   teamLeaderId: number | null;
 }
 
-export interface Report {
-  id: number;
-  userId: number;
-  reportDate: Date;
-  title: string;
-  content: string;
-  reportType: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'custom';
-  period: string | null;
-}
-
 export interface Activity {
   id: number;
   userId: number | null;
-  createdAt: Date;
   action: string;
   details: string | null;
+  createdAt: Date;
 }
 
 export interface Message {
@@ -102,16 +92,14 @@ export interface Message {
   receiverId: number;
   content: string;
   timestamp: Date;
-  isRead: boolean;
+  read: boolean;
 }
 
-export interface Performance {
+export interface PerformanceMetric {
   id: number;
   userId: number;
-  period: string;
-  targets: number;
-  achieved: number;
-  rating: number | null;
-  comments: string | null;
-  evaluatorId: number | null;
+  metricType: string;
+  value: number;
+  date: Date;
+  notes: string | null;
 }
