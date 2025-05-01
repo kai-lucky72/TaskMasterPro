@@ -1,11 +1,30 @@
-export type UserRole = 'admin' | 'manager' | 'sales_staff' | 'team_leader' | 'individual_agent' | 'sales_agent';
+/**
+ * Type definitions for the application
+ */
 
+/**
+ * User roles in the organization
+ */
+export type UserRole =
+  | 'admin'
+  | 'manager'
+  | 'sales_staff'
+  | 'team_leader'
+  | 'individual_agent'
+  | 'sales_agent';
+
+/**
+ * User status options
+ */
 export type UserStatus = 'active' | 'disabled';
 
+/**
+ * User information
+ */
 export interface User {
   id: number;
-  email: string;
   workId: string;
+  email: string;
   firstName: string;
   lastName: string;
   nationalId: string;
@@ -18,21 +37,48 @@ export interface User {
   salesStaffId: number | null;
 }
 
-export interface Team {
+/**
+ * Agent group information
+ */
+export interface AgentGroup {
   id: number;
   name: string;
-  createdAt: Date;
   salesStaffId: number;
   teamLeaderId: number | null;
+  createdAt: Date;
 }
 
-export type AttendanceSector = 'health' | 'admin_staff' | 'private_sectors' | 'other';
+/**
+ * Group member information
+ */
+export interface GroupMember {
+  id: number;
+  groupId: number;
+  agentId: number;
+  createdAt: Date;
+}
 
+/**
+ * Attendance timeframe for scheduling
+ */
+export interface AttendanceTimeframe {
+  id: number;
+  name: string;
+  startTime: string;
+  endTime: string;
+  createdAt: Date;
+  createdById: number;
+  isActive: boolean;
+}
+
+/**
+ * Attendance record for tracking user presence
+ */
 export interface Attendance {
   id: number;
   userId: number;
   date: Date;
-  sector: AttendanceSector | null;
+  sector: 'health' | 'admin_staff' | 'private_sectors' | 'other' | null;
   location: string | null;
   isPresent: boolean | null;
   isExcused: boolean | null;
@@ -40,66 +86,79 @@ export interface Attendance {
   excuseReason: string | null;
 }
 
-export type InsuranceType = 
-  | 'education'
-  | 'intego'
-  | 'family_insurance'
-  | 'epi'
-  | 'nkunganire_shoferi'
-  | 'umurage_amashuri'
-  | 'ikimina'
-  | 'others';
-
-export type PaymentMethod = 'salary_deduction' | 'momo';
-
+/**
+ * Client information
+ */
 export interface Client {
   id: number;
   name: string;
   email: string | null;
   nationalId: string;
   phoneNumber: string;
-  createdAt: Date;
-  insuranceType: InsuranceType;
-  paymentMethod: PaymentMethod;
+  insuranceType:
+    | 'education'
+    | 'intego'
+    | 'family_insurance'
+    | 'epi'
+    | 'nkunganire_shoferi'
+    | 'umurage_amashuri'
+    | 'ikimina'
+    | 'others';
+  paymentMethod: 'salary_deduction' | 'momo';
   amount: number;
   agentId: number;
-  notes: string | null;
+  createdAt: Date;
+  status: 'pending' | 'active' | 'rejected' | 'canceled';
 }
 
-export interface HelpRequest {
+/**
+ * Report information
+ */
+export interface Report {
   id: number;
-  userId: number;
   title: string;
   content: string;
   submissionDate: Date;
-  status: string;
+  userId: number;
   managerId: number | null;
   salesStaffId: number | null;
   teamLeaderId: number | null;
+  status: 'pending' | 'reviewed' | 'approved' | 'rejected';
 }
 
-export interface Activity {
-  id: number;
-  userId: number | null;
-  action: string;
-  details: string | null;
-  createdAt: Date;
-}
-
+/**
+ * Message information for internal communication
+ */
 export interface Message {
   id: number;
   senderId: number;
   receiverId: number;
   content: string;
-  timestamp: Date;
-  read: boolean;
+  createdAt: Date;
+  isRead: boolean;
+  readAt: Date | null;
 }
 
-export interface PerformanceMetric {
+/**
+ * Help request for login issues
+ */
+export interface HelpRequest {
   id: number;
-  userId: number;
-  metricType: string;
-  value: number;
-  date: Date;
-  notes: string | null;
+  workId: string;
+  email: string;
+  message: string;
+  createdAt: Date;
+  resolvedById: number | null;
+  resolvedAt: Date | null;
+}
+
+/**
+ * Activity log for auditing
+ */
+export interface ActivityLog {
+  id: number;
+  userId: number | null;
+  action: string;
+  details: string | null;
+  createdAt: Date;
 }

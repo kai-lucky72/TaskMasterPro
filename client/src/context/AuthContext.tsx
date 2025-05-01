@@ -5,17 +5,17 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, getQueryFn, queryClient } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
+import { getQueryFn, queryClient } from '@/lib/queryClient';
 import { User } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { useApi } from '@/hooks/use-api';
 
 type LoginCredentials = {
   email: string;
   workId: string;
 };
 
-type AuthContextType = {
+export type AuthContextType = {
   user: User | null;
   loading: boolean;
   error: Error | null;
@@ -26,7 +26,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const { toast } = useToast();
+  const { createMutation } = useApi();
   const [loading, setLoading] = useState(true);
 
   // Get the current authenticated user
@@ -34,54 +34,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     data: user,
     error,
     isLoading: queryLoading,
+    refetch: refetchUser,
   } = useQuery<User | null>({
-    queryKey: ['/api/user'],
+    queryKey: ['/api/auth/me'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
     initialData: null, // Ensure user is never undefined
   });
 
   // Handle login mutation
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      const res = await apiRequest('POST', '/api/login', credentials);
-      return res.json();
-    },
-    onSuccess: (data: User) => {
-      queryClient.setQueryData(['/api/user'], data);
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back, ${data.firstName} ${data.lastName}`,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Login Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+  const loginMutation = createMutation<LoginCredentials, { user: User }>(
+    'POST',
+    '/api/auth/login',
+    {
+      onSuccess: (data) => {
+        queryClient.setQueryData(['/api/auth/me'], data.user);
+      },
+      successMessage: `Welcome back, ${user?.firstName || 'User'}`,
+    }
+  );
 
   // Handle logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: async () => {
-      await apiRequest('POST', '/api/logout');
-    },
-    onSuccess: () => {
-      queryClient.setQueryData(['/api/user'], null);
-      toast({
-        title: 'Logged Out',
-        description: 'You have been successfully logged out',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Logout Failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+  const logoutMutation = createMutation<void, void>(
+    'POST',
+    '/api/auth/logout',
+    {
+      onSuccess: () => {
+        queryClient.setQueryData(['/api/auth/me'], null);
+      },
+      successMessage: 'You have been successfully logged out',
+    }
+  );
 
   const login = async (credentials: LoginCredentials) => {
     await loginMutation.mutateAsync(credentials);

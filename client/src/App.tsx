@@ -1,13 +1,14 @@
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/AuthContext";
+import { ProtectedRoute } from "@/lib/protected-route";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import NotFound from "@/pages/not-found";
-import RoleGuard from "@/components/common/RoleGuard";
+import { UserRole } from "@/types";
 
 // Admin pages
 import Managers from "@/pages/managers";
@@ -28,95 +29,114 @@ import Agents from "@/pages/agents";
 import Settings from "@/pages/settings";
 
 function Router() {
-  const [location] = useLocation();
-
   return (
     <Switch>
-      <Route path="/login">
-        <Login />
-      </Route>
+      {/* Public routes */}
+      <Route path="/login" component={Login} />
       
-      {/* Dashboard route */}
-      <Route path="/">
-        <RoleGuard redirect="/login">
-          <Dashboard />
-        </RoleGuard>
-      </Route>
-
+      {/* Protected routes with role-based access */}
+      <ProtectedRoute path="/" component={Dashboard} />
+      
       {/* Admin routes */}
-      <Route path="/managers">
-        <RoleGuard allowedRoles={["admin"]} redirect="/">
-          <Managers />
-        </RoleGuard>
-      </Route>
-      <Route path="/help-requests">
-        <RoleGuard allowedRoles={["admin"]} redirect="/">
-          <HelpRequests />
-        </RoleGuard>
-      </Route>
-      <Route path="/activities">
-        <RoleGuard allowedRoles={["admin"]} redirect="/">
-          <Activities />
-        </RoleGuard>
-      </Route>
+      <ProtectedRoute 
+        path="/managers" 
+        component={Managers} 
+        allowedRoles={["admin"] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/help-requests" 
+        component={HelpRequests} 
+        allowedRoles={["admin"] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/activities" 
+        component={Activities} 
+        allowedRoles={["admin"] as UserRole[]} 
+      />
 
       {/* Manager routes */}
-      <Route path="/sales-staff">
-        <RoleGuard allowedRoles={["manager"]} redirect="/">
-          <SalesStaff />
-        </RoleGuard>
-      </Route>
+      <ProtectedRoute 
+        path="/sales-staff" 
+        component={SalesStaff} 
+        allowedRoles={["manager"] as UserRole[]} 
+      />
 
       {/* Sales Staff routes */}
-      <Route path="/agents">
-        <RoleGuard allowedRoles={["sales_staff"]} redirect="/">
-          <Agents />
-        </RoleGuard>
-      </Route>
+      <ProtectedRoute 
+        path="/agents" 
+        component={Agents} 
+        allowedRoles={["sales_staff"] as UserRole[]} 
+      />
 
       {/* Team Leader routes */}
-      <Route path="/team">
-        <RoleGuard allowedRoles={["team_leader"]} redirect="/">
-          <Team />
-        </RoleGuard>
-      </Route>
+      <ProtectedRoute 
+        path="/team" 
+        component={Team} 
+        allowedRoles={["team_leader"] as UserRole[]} 
+      />
 
       {/* Common routes with role-specific content */}
-      <Route path="/performance">
-        <RoleGuard allowedRoles={["manager", "sales_staff", "team_leader", "individual_agent", "sales_agent"]} redirect="/">
-          <Performance />
-        </RoleGuard>
-      </Route>
-      <Route path="/reports">
-        <RoleGuard allowedRoles={["manager", "sales_staff", "team_leader", "individual_agent", "sales_agent"]} redirect="/">
-          <Reports />
-        </RoleGuard>
-      </Route>
-      <Route path="/attendance">
-        <RoleGuard allowedRoles={["manager", "sales_staff", "team_leader", "individual_agent", "sales_agent"]} redirect="/">
-          <Attendance />
-        </RoleGuard>
-      </Route>
-      <Route path="/messages">
-        <RoleGuard allowedRoles={["manager", "sales_staff", "team_leader", "individual_agent", "sales_agent"]} redirect="/">
-          <Messages />
-        </RoleGuard>
-      </Route>
-      <Route path="/clients">
-        <RoleGuard allowedRoles={["sales_staff", "team_leader", "individual_agent", "sales_agent"]} redirect="/">
-          <Clients />
-        </RoleGuard>
-      </Route>
-      <Route path="/settings">
-        <RoleGuard redirect="/login">
-          <Settings />
-        </RoleGuard>
-      </Route>
+      <ProtectedRoute 
+        path="/performance" 
+        component={Performance} 
+        allowedRoles={[
+          "manager", 
+          "sales_staff", 
+          "team_leader", 
+          "individual_agent", 
+          "sales_agent"
+        ] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/reports" 
+        component={Reports} 
+        allowedRoles={[
+          "manager", 
+          "sales_staff", 
+          "team_leader", 
+          "individual_agent", 
+          "sales_agent"
+        ] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/attendance" 
+        component={Attendance} 
+        allowedRoles={[
+          "manager", 
+          "sales_staff", 
+          "team_leader", 
+          "individual_agent", 
+          "sales_agent"
+        ] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/messages" 
+        component={Messages} 
+        allowedRoles={[
+          "manager", 
+          "sales_staff", 
+          "team_leader", 
+          "individual_agent", 
+          "sales_agent"
+        ] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/clients" 
+        component={Clients} 
+        allowedRoles={[
+          "sales_staff", 
+          "team_leader", 
+          "individual_agent", 
+          "sales_agent"
+        ] as UserRole[]} 
+      />
+      <ProtectedRoute 
+        path="/settings" 
+        component={Settings} 
+      />
 
       {/* 404 route */}
-      <Route>
-        <NotFound />
-      </Route>
+      <Route component={NotFound} />
     </Switch>
   );
 }
