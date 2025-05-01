@@ -1,0 +1,145 @@
+"Build a full stack web application compatible with web and mobile devices for managing a hierarchical organization with four user roles: Admin, Manager, Sales Staff, and Agents (Individual Agents, Team Leaders, and Sales Agents in groups). The application should use a login-based authentication system (Work ID and Email, no registration) and include role-based dashboards displaying only authorized functionalities. Implement the following:
+
+
+
+
+
+Hierarchical User Management:
+
+
+
+
+
+Default Admin creates Managers; Managers create Sales Staff; Sales Staff create Agents (Individual or Groups with 2–5 members, including a Team Leader).
+
+
+
+User creation requires Work ID, Email, First Name, Last Name, National ID, Phone Number.
+
+
+
+Admins can disable/re-enable any user; Managers can disable their Sales Staff; Sales Staff can disable their Agents. Disabled users’ data must persist.
+
+
+
+Authentication:
+
+
+
+
+
+Login with Work ID and Email. Log failed attempts for Admin review (Help Login Requests).
+
+
+
+Dashboards (one per role):
+
+
+
+
+
+Admin: Create/update/delete/view Managers, view Help Login Requests, monitor user activities, disable/re-enable users.
+
+
+
+Manager: Create/update/delete/view Sales Staff, view their Agents, monitor attendance/performance/reports, disable/re-enable Sales Staff, message Admin/Sales Staff.
+
+
+
+Sales Staff: Create/update/delete/view Agents (Individual/Group), set attendance timeframes, excuse absences, view attendance/performance/reports, disable/re-enable Agents, message Managers/Team Leaders/Individual Agents.
+
+
+
+Individual Agent: Mark attendance (sector: Health/AdminStaff/PrivateSectors/Other; location), add clients, view performance, submit weekly reports, message Sales Staff.
+
+
+
+Team Leader: Mark attendance, add clients, collect/submit group reports, view group/personal performance, message Sales Staff/Sales Agents.
+
+
+
+Sales Agent (Group): Mark attendance, add clients, submit weekly reports to Team Leader, view personal performance, message Team Leader.
+
+
+
+Attendance:
+
+
+
+
+
+Agents mark attendance daily (sector and location) within Sales Staff-set timeframes. Unmarked attendance marks Agents absent, blocking client addition unless excused.
+
+
+
+Sales Staff view/excuse attendance; Managers view attendance.
+
+
+
+Client Management:
+
+
+
+
+
+Agents add clients with Name, National ID, Phone Number, Email, Insurance Type (Education/Intego/FamilyInsurance/EPI/NkunganireShoferi/UmurageAmashuri/Ikimina/Others), Payment Method (SalaryDeduction/Bank/MoMo), Amount (RWF).
+
+
+
+Performance Analytics:
+
+
+
+
+
+Managers, Sales Staff, and Agents view client acquisition metrics (weekly, monthly, 3-month periods).
+
+
+
+Team Leaders view group metrics; others view personal metrics.
+
+
+
+Reporting:
+
+
+
+
+
+Individual Agents/Sales Agents submit weekly client reports. Team Leaders consolidate group reports for Sales Staff. Sales Staff forward to Managers.
+
+
+
+Messaging:
+
+
+
+
+
+Admin ↔ Managers, Managers ↔ Sales Staff, Sales Staff ↔ Individual Agents/Team Leaders, Team Leaders ↔ Sales Agents.
+
+
+
+Data Isolation:
+
+
+
+
+
+Managers cannot access other Managers’ data. Sales Staff cannot access other Sales Staff’s data. Attendance timeframes are Sales Staff-specific.
+
+
+
+Database:
+
+
+
+
+
+Use a relational database with tables for Users, AgentGroups, GroupMembers, Attendance, AttendanceTimeframes, Clients, Reports, Messages, LoginHelpRequests, ActivityLogs, PerformanceMetrics (as described in the schema).
+
+
+
+Enforce unique constraints on WorkID/Email, role-based access, and group size limits.
+
+Use a modern web stack (e.g., React for frontend, Node.js/Express for backend, PostgreSQL for database) with responsive design. Ensure role-based access control, data isolation, and data persistence for disabled users. Deploy the application to be accessible on web and mobile devices."
