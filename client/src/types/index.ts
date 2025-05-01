@@ -158,7 +158,20 @@ export interface HelpRequest {
 export interface ActivityLog {
   id: number;
   userId: number | null;
+  user?: User;
   action: string;
   details: string | null;
   createdAt: Date;
+}
+
+/**
+ * Stats display data for dashboard cards
+ */
+export interface StatsData {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode | string;
+  color?: 'blue' | 'green' | 'purple' | 'orange' | 'amber' | 'red';
+  change?: number;
+  changeText?: string;
 }
