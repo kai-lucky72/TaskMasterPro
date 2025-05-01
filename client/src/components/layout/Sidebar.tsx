@@ -20,27 +20,12 @@ const Sidebar = () => {
 
   // Define navigation items based on user role
   const getNavItems = () => {
-    // Common items for all roles
-    const commonItems = [
+    // Base items that all roles have
+    const baseItems = [
       {
         name: 'Dashboard',
         href: '/',
         icon: <LayoutDashboard className="h-5 w-5" />,
-      },
-      {
-        name: 'Performance',
-        href: '/performance',
-        icon: <BarChart2 className="h-5 w-5" />,
-      },
-      {
-        name: 'Reports',
-        href: '/reports',
-        icon: <FileText className="h-5 w-5" />,
-      },
-      {
-        name: 'Attendance',
-        href: '/attendance',
-        icon: <Calendar className="h-5 w-5" />,
       },
       {
         name: 'Messages',
@@ -53,59 +38,174 @@ const Sidebar = () => {
         icon: <Settings className="h-5 w-5" />,
       },
     ];
-
-    // Role-specific items
-    const roleItems: Record<string, Array<{ name: string; href: string; icon: JSX.Element }>> = {
-      admin: [
-        {
-          name: 'Managers',
-          href: '/managers',
-          icon: <Users className="h-5 w-5" />,
-        },
-        {
-          name: 'Help Requests',
-          href: '/help-requests',
-          icon: <HelpCircle className="h-5 w-5" />,
-        },
-        {
-          name: 'Activities',
-          href: '/activities',
-          icon: <Activity className="h-5 w-5" />,
-        },
-      ],
-      manager: [
-        {
-          name: 'Sales Staff',
-          href: '/sales-staff',
-          icon: <Users className="h-5 w-5" />,
-        },
-      ],
-      sales_staff: [
-        {
-          name: 'Agents',
-          href: '/agents',
-          icon: <Users className="h-5 w-5" />,
-        },
-      ],
-      team_leader: [
-        {
-          name: 'Team',
-          href: '/team',
-          icon: <Users className="h-5 w-5" />,
-        },
-      ],
-    };
-
-    // Include clients for relevant roles
-    if (['sales_staff', 'team_leader', 'individual_agent', 'sales_agent'].includes(user?.role || '')) {
-      commonItems.push({
-        name: 'Clients',
-        href: '/clients',
-        icon: <ClipboardList className="h-5 w-5" />,
-      });
+    
+    // Role-specific navigation items
+    switch (user?.role) {
+      // Admin Dashboard
+      case 'admin':
+        return [
+          ...baseItems,
+          {
+            name: 'Managers',
+            href: '/managers',
+            icon: <Users className="h-5 w-5" />,
+          },
+          {
+            name: 'Help Requests',
+            href: '/help-requests',
+            icon: <HelpCircle className="h-5 w-5" />,
+          },
+          {
+            name: 'Activities',
+            href: '/activities',
+            icon: <Activity className="h-5 w-5" />,
+          },
+        ];
+      
+      // Manager Dashboard
+      case 'manager':
+        return [
+          ...baseItems,
+          {
+            name: 'Sales Staff',
+            href: '/sales-staff',
+            icon: <Users className="h-5 w-5" />,
+          },
+          {
+            name: 'Agents',
+            href: '/agents',
+            icon: <Users className="h-5 w-5" />,
+          },
+          {
+            name: 'Attendance',
+            href: '/attendance',
+            icon: <Calendar className="h-5 w-5" />,
+          },
+          {
+            name: 'Performance',
+            href: '/performance',
+            icon: <BarChart2 className="h-5 w-5" />,
+          },
+          {
+            name: 'Reports',
+            href: '/reports',
+            icon: <FileText className="h-5 w-5" />,
+          },
+        ];
+      
+      // Sales Staff Dashboard
+      case 'sales_staff':
+        return [
+          ...baseItems,
+          {
+            name: 'Agents',
+            href: '/agents',
+            icon: <Users className="h-5 w-5" />,
+          },
+          {
+            name: 'Attendance',
+            href: '/attendance',
+            icon: <Calendar className="h-5 w-5" />,
+          },
+          {
+            name: 'Performance',
+            href: '/performance',
+            icon: <BarChart2 className="h-5 w-5" />,
+          },
+          {
+            name: 'Reports',
+            href: '/reports',
+            icon: <FileText className="h-5 w-5" />,
+          },
+        ];
+      
+      // Individual Agent Dashboard
+      case 'individual_agent':
+        return [
+          ...baseItems,
+          {
+            name: 'Attendance',
+            href: '/attendance',
+            icon: <Calendar className="h-5 w-5" />,
+          },
+          {
+            name: 'Clients',
+            href: '/clients',
+            icon: <ClipboardList className="h-5 w-5" />,
+          },
+          {
+            name: 'Performance',
+            href: '/performance',
+            icon: <BarChart2 className="h-5 w-5" />,
+          },
+          {
+            name: 'Reports',
+            href: '/reports',
+            icon: <FileText className="h-5 w-5" />,
+          },
+        ];
+      
+      // Team Leader Dashboard
+      case 'team_leader':
+        return [
+          ...baseItems,
+          {
+            name: 'Attendance',
+            href: '/attendance',
+            icon: <Calendar className="h-5 w-5" />,
+          },
+          {
+            name: 'Clients',
+            href: '/clients',
+            icon: <ClipboardList className="h-5 w-5" />,
+          },
+          {
+            name: 'Team',
+            href: '/team',
+            icon: <Users className="h-5 w-5" />,
+          },
+          {
+            name: 'Performance',
+            href: '/performance',
+            icon: <BarChart2 className="h-5 w-5" />,
+          },
+          {
+            name: 'Reports',
+            href: '/reports',
+            icon: <FileText className="h-5 w-5" />,
+          },
+        ];
+      
+      // Sales Agent (Group) Dashboard
+      case 'sales_agent':
+        return [
+          ...baseItems,
+          {
+            name: 'Attendance',
+            href: '/attendance',
+            icon: <Calendar className="h-5 w-5" />,
+          },
+          {
+            name: 'Clients',
+            href: '/clients',
+            icon: <ClipboardList className="h-5 w-5" />,
+          },
+          {
+            name: 'Performance',
+            href: '/performance',
+            icon: <BarChart2 className="h-5 w-5" />,
+          },
+          {
+            name: 'Reports',
+            href: '/reports',
+            icon: <FileText className="h-5 w-5" />,
+          },
+        ];
+      
+      // Default case for unknown role or no user
+      default:
+        return baseItems;
     }
-
-    return [...commonItems, ...(roleItems[user?.role || ''] || [])];
   };
 
   const navItems = getNavItems();
@@ -128,18 +228,17 @@ const Sidebar = () => {
             const isActive = location === item.href;
             return (
               <li key={item.href}>
-                <Link href={item.href}>
-                  <a
-                    className={`flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors ${isActive
-                      ? 'bg-blue-50 text-blue-700 font-semibold'
-                      : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                  >
-                    <span className={`${isActive ? 'text-blue-700' : 'text-gray-500'}`}>
-                      {item.icon}
-                    </span>
-                    <span className="ml-3">{item.name}</span>
-                  </a>
+                <Link 
+                  href={item.href}
+                  className={`flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors ${isActive
+                    ? 'bg-blue-50 text-blue-700 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                >
+                  <span className={`${isActive ? 'text-blue-700' : 'text-gray-500'}`}>
+                    {item.icon}
+                  </span>
+                  <span className="ml-3">{item.name}</span>
                 </Link>
               </li>
             );
