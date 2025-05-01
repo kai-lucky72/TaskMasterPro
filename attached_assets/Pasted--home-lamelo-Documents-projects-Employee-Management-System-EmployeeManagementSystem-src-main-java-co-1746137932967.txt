@@ -1,0 +1,78 @@
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:17:8
+java: class EmployeeService is public, should be declared in a file named EmployeeService.java
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:101:17
+java: cannot find symbol
+  symbol:   class employee
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:74:14
+java: cannot find symbol
+  symbol:   class employee
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:74:36
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:90:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:94:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:98:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:102:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:107:14
+java: cannot find symbol
+  symbol:   class employee
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:107:36
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:115:14
+java: cannot find symbol
+  symbol:   class employee
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:115:36
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:131:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:134:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:137:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:140:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:143:16
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:147:14
+java: cannot find symbol
+  symbol:   class employee
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:147:36
+java: cannot find symbol
+  symbol:   variable bRepo
+  location: class com.empManagement.empManagement.service.EmployeeService
+/home/lamelo/Documents/projects/Employee_Management_System/EmployeeManagementSystem/src/main/java/com/empManagement/empManagement/service/employeeService.java:150:56
+java: cannot find symbol
+  symbol:   method getDepartment()
+  location: variable employee of type java.lang.Object
