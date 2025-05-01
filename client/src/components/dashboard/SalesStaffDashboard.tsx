@@ -218,8 +218,8 @@ export default function SalesStaffDashboard() {
       
       {/* Agent Management */}
       <Card className="shadow-sm border border-slate-200 mb-8">
-        <CardHeader className="pb-2 border-b">
-          <Tabs defaultValue="agents" onValueChange={setActiveTab}>
+        <Tabs defaultValue="agents" onValueChange={setActiveTab}>
+          <CardHeader className="pb-2 border-b">
             <div className="flex justify-between items-center">
               <CardTitle className="text-lg">Agent Management</CardTitle>
               <TabsList>
@@ -230,77 +230,77 @@ export default function SalesStaffDashboard() {
                 <TabsTrigger value="groups">Agent Groups</TabsTrigger>
               </TabsList>
             </div>
-          </Tabs>
-        </CardHeader>
-        
-        <TabsContent value="agents" className="m-0">
-          <UserTable 
-            users={getAllAgents()} 
-            isLoading={agentsLoading || teamLeadersLoading || salesAgentsLoading} 
-            showActions={true}
-          />
-        </TabsContent>
-        
-        <TabsContent value="individual" className="m-0">
-          <UserTable 
-            users={agentsData?.users} 
-            isLoading={agentsLoading} 
-            showActions={true}
-          />
-        </TabsContent>
-        
-        <TabsContent value="teamLeaders" className="m-0">
-          <UserTable 
-            users={teamLeadersData?.users} 
-            isLoading={teamLeadersLoading} 
-            showActions={true}
-          />
-        </TabsContent>
-        
-        <TabsContent value="salesAgents" className="m-0">
-          <UserTable 
-            users={salesAgentsData?.users} 
-            isLoading={salesAgentsLoading} 
-            showActions={true}
-          />
-        </TabsContent>
-        
-        <TabsContent value="groups" className="m-0">
-          <div className="p-4">
-            {groupsLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-slate-100 h-16 rounded animate-pulse"></div>
-                ))}
-              </div>
-            ) : groupsData?.groups?.length ? (
-              <div className="space-y-4">
-                {groupsData.groups.map((group: AgentGroup) => (
-                  <div key={group.id} className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h3 className="font-medium">{group.name}</h3>
-                        <p className="text-sm text-slate-500">Created: {new Date(group.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div>
-                        <Link href={`/agent-groups/${group.id}`}>
-                          <Button size="sm">View Group</Button>
-                        </Link>
+          </CardHeader>
+          
+          <TabsContent value="agents" className="m-0">
+            <UserTable 
+              users={getAllAgents()} 
+              isLoading={agentsLoading || teamLeadersLoading || salesAgentsLoading} 
+              showActions={true}
+            />
+          </TabsContent>
+          
+          <TabsContent value="individual" className="m-0">
+            <UserTable 
+              users={agentsData?.users} 
+              isLoading={agentsLoading} 
+              showActions={true}
+            />
+          </TabsContent>
+          
+          <TabsContent value="teamLeaders" className="m-0">
+            <UserTable 
+              users={teamLeadersData?.users} 
+              isLoading={teamLeadersLoading} 
+              showActions={true}
+            />
+          </TabsContent>
+          
+          <TabsContent value="salesAgents" className="m-0">
+            <UserTable 
+              users={salesAgentsData?.users} 
+              isLoading={salesAgentsLoading} 
+              showActions={true}
+            />
+          </TabsContent>
+          
+          <TabsContent value="groups" className="m-0">
+            <div className="p-4">
+              {groupsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-slate-100 h-16 rounded animate-pulse"></div>
+                  ))}
+                </div>
+              ) : groupsData?.groups?.length ? (
+                <div className="space-y-4">
+                  {groupsData.groups.map((group: AgentGroup) => (
+                    <div key={group.id} className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h3 className="font-medium">{group.name}</h3>
+                          <p className="text-sm text-slate-500">Created: {new Date(group.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <Link href={`/agent-groups/${group.id}`}>
+                            <Button size="sm">View Group</Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-slate-500">
-                <p>No agent groups found</p>
-                <Link href="/agent-groups/add">
-                  <Button className="mt-4">Create Agent Group</Button>
-                </Link>
-              </div>
-            )}
-          </div>
-        </TabsContent>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-slate-500">
+                  <p>No agent groups found</p>
+                  <Link href="/agent-groups/add">
+                    <Button className="mt-4">Create Agent Group</Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
         
         <CardFooter className="border-t p-4 text-sm">
           <div className="flex items-center justify-between w-full">

@@ -68,12 +68,16 @@ export default function ReportsPage() {
   const getEndpoint = () => {
     switch (user?.role) {
       case 'manager':
+        // Managers view reports from sales staff
         return '/api/reports/manager';
       case 'sales_staff':
+        // Sales staff view reports from their team leaders and agents
         return '/api/reports/sales-staff';
       case 'team_leader':
+        // Team leaders view reports from their agents
         return '/api/reports/team-leader';
       default:
+        // Agents view their own reports
         return '/api/reports/agent';
     }
   };
@@ -252,8 +256,9 @@ export default function ReportsPage() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
               <p className="text-muted-foreground">
-                {user?.role === 'manager' ? 'Review and manage reports from sales staff and agents.' :
-                 user?.role === 'sales_staff' ? 'Manage reports from your agents and submit your own.' :
+                {user?.role === 'manager' ? 'Review and manage reports from sales staff.' :
+                 user?.role === 'sales_staff' ? 'Review reports from your team leaders and agents.' :
+                 user?.role === 'team_leader' ? 'Collect reports from your agents and submit consolidated reports.' :
                  'View and submit your reports.'}
               </p>
             </div>
@@ -281,27 +286,36 @@ export default function ReportsPage() {
                 </PopoverContent>
               </Popover>
               
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gap-1">
-                    <Plus className="h-4 w-4" />
-                    New Report
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Create New Report</DialogTitle>
-                    <DialogDescription>
-                      Submit a new report to your supervisor.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="py-4">
-                    <p className="text-center text-muted-foreground">
-                      Report creation form will be implemented here.
-                    </p>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              {/* Only show New Report button for agents and team leaders, not for sales staff or managers */}
+              {['individual_agent', 'team_leader', 'sales_agent'].includes(user?.role || '') && (
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="gap-1">
+                      <Plus className="h-4 w-4" />
+                      New Report
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New Report</DialogTitle>
+                      <DialogDescription>
+                        {user?.role === 'team_leader' 
+                          ? 'Submit a consolidated report including your agents\'s reports.' 
+                          : 'Submit a new report to your team leader.'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                      {user && (
+                        <ReportForm 
+                          onSubmit={() => {}} 
+                          isSubmitting={false} 
+                          role={user.role}
+                        />
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
           </div>
 
