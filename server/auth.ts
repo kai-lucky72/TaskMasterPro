@@ -50,19 +50,17 @@ export function setupAuth(app: Express) {
   // Configure login strategy
   passport.use(new LocalStrategy({
     usernameField: 'workId',
-    passwordField: 'password',
-  }, async (workId, password, done) => {
+    passwordField: 'email',
+  }, async (workId, email, done) => {
     try {
-      // Find user by work ID
+      // For this simple login, we're using workId and email instead of passwords
       const user = await storage.getUserByWorkId(workId);
       if (!user) {
-        return done(null, false, { message: 'Invalid work ID or password' });
+        return done(null, false, { message: 'Invalid work ID or email' });
       }
       
-      // Verify password
-      const isPasswordValid = await storage.comparePasswords(password, user.password);
-      if (!isPasswordValid) {
-        return done(null, false, { message: 'Invalid work ID or password' });
+      if (user.email !== email) {
+        return done(null, false, { message: 'Invalid work ID or email' });
       }
 
       if (user.status === 'disabled') {

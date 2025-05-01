@@ -161,7 +161,6 @@ export const insertActivityLogSchema = createInsertSchema(activityLogs)
 export const loginSchema = z.object({
   workId: z.string().min(1, "Work ID is required"),
   email: z.string().email("Invalid email format"),
-  password: z.string().min(1, "Password is required"),
 });
 
 export const helpRequestSchema = z.object({
