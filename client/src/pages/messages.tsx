@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import RoleGuard from '@/components/common/RoleGuard';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import RoleGuard from '@/components/common/RoleGuard';
 import { User } from '@/types';
@@ -45,6 +46,9 @@ interface Message {
 }
 
 export default function MessagesPage() {
+  const allowedRoles = ['admin', 'manager', 'sales_staff', 'team_leader', 'individual_agent', 'sales_agent'];
+  return (
+    <RoleGuard allowedRoles={allowedRoles} redirect="/">
   const { user } = useAuth();
   const { toast } = useToast();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -389,5 +393,6 @@ export default function MessagesPage() {
         </div>
       </div>
     </DashboardLayout>
+  </RoleGuard>
   );
 }

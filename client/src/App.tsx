@@ -113,6 +113,7 @@ function Router() {
         path="/messages" 
         component={Messages} 
         allowedRoles={[
+          "admin",
           "manager", 
           "sales_staff", 
           "team_leader", 
