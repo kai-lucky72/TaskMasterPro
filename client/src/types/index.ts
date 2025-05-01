@@ -1,5 +1,11 @@
-// User types
-export type UserRole = 'admin' | 'manager' | 'sales_staff' | 'individual_agent' | 'team_leader' | 'sales_agent';
+export type UserRole = 
+  | 'admin'
+  | 'manager'
+  | 'sales_staff'
+  | 'individual_agent'
+  | 'team_leader'
+  | 'sales_agent';
+
 export type UserStatus = 'active' | 'disabled';
 
 export interface User {
@@ -8,178 +14,17 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  nationalId?: string;
-  phoneNumber?: string;
   role: UserRole;
   status: UserStatus;
   createdAt?: string;
-  createdById?: number;
-  managerId?: number;
-  salesStaffId?: number;
+  managerId?: number | null;
+  salesStaffId?: number | null;
 }
 
-export interface AuthUser {
-  id: number;
-  workId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: UserRole;
-  status: UserStatus;
+export interface AuthUser extends User {
+  // Additional properties that might be included in auth context
 }
 
-// Group types
-export interface AgentGroup {
-  id: number;
-  name: string;
-  createdAt: string;
-  salesStaffId: number;
-  teamLeaderId?: number;
-}
-
-export interface GroupMember {
-  id: number;
-  groupId: number;
-  userId: number;
-  user?: User;
-}
-
-// Attendance types
-export interface AttendanceTimeframe {
-  id: number;
-  salesStaffId: number;
-  startTime: string;
-  endTime: string;
-  createdAt: string;
-}
-
-export type Sector = 'health' | 'admin_staff' | 'private_sectors' | 'other';
-
-export interface Attendance {
-  id: number;
-  userId: number;
-  date: string;
-  sector?: Sector;
-  location?: string;
-  isPresent: boolean;
-  isExcused: boolean;
-  excusedById?: number;
-  excuseReason?: string;
-}
-
-// Client types
-export type InsuranceType = 'education' | 'intego' | 'family_insurance' | 'epi' | 
-                           'nkunganire_shoferi' | 'umurage_amashuri' | 'ikimina' | 'others';
-export type PaymentMethod = 'salary_deduction' | 'bank' | 'momo';
-
-export interface Client {
-  id: number;
-  name: string;
-  nationalId: string;
-  phoneNumber: string;
-  email?: string;
-  insuranceType: InsuranceType;
-  paymentMethod: PaymentMethod;
-  amount: number;
-  createdAt: string;
-  agentId: number;
-}
-
-// Report types
-export interface Report {
-  id: number;
-  title: string;
-  content: string;
-  userId: number;
-  teamLeaderId?: number;
-  salesStaffId?: number;
-  managerId?: number;
-  submissionDate: string;
-  status: string;
-}
-
-// Message types
-export interface Message {
-  id: number;
-  content: string;
-  senderId: number;
-  receiverId: number;
-  createdAt: string;
-  isRead: boolean;
-  sender?: User;
-  receiver?: User;
-}
-
-// Help Request types
-export interface HelpRequest {
-  id: number;
-  workId: string;
-  email: string;
-  message: string;
-  status: string;
-  createdAt: string;
-  resolvedById?: number;
-  resolvedAt?: string;
-}
-
-// Activity Log types
-export interface ActivityLog {
-  id: number;
-  userId?: number;
-  action: string;
-  details?: string;
-  createdAt: string;
-  user?: Partial<User>;
-}
-
-// Form types
-export interface UserFormData {
-  workId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  nationalId: string;
-  phoneNumber: string;
-  role: UserRole;
-}
-
-export interface ClientFormData {
-  name: string;
-  nationalId: string;
-  phoneNumber: string;
-  email?: string;
-  insuranceType: InsuranceType;
-  paymentMethod: PaymentMethod;
-  amount: number;
-}
-
-export interface AttendanceFormData {
-  sector?: Sector;
-  location?: string;
-}
-
-export interface ReportFormData {
-  title: string;
-  content: string;
-  teamLeaderId?: number;
-}
-
-export interface MessageFormData {
-  receiverId: number;
-  content: string;
-}
-
-// Stats and dashboard data
-export interface StatsData {
-  icon: string;
-  title: string;
-  value: number | string;
-  change?: number;
-  changeText?: string;
-  color: 'blue' | 'green' | 'purple' | 'orange' | 'amber' | 'red';
-}
-
-// Theme colors
 export interface ThemeColors {
   primary: string;
   secondary: string;

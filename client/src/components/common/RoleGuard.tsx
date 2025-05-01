@@ -1,42 +1,46 @@
-import { ReactNode, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useAuth } from "@/context/AuthContext";
-import { UserRole } from "@/types";
+import { ReactNode, useEffect } from 'react';
+import { Redirect, useLocation } from 'wouter';
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 interface RoleGuardProps {
   children: ReactNode;
-  allowedRoles?: UserRole[];
-  redirect?: string;
+  allowedRoles?: string[];
+  redirect: string;
 }
 
 export default function RoleGuard({ 
   children, 
   allowedRoles, 
-  redirect = "/login" 
+  redirect 
 }: RoleGuardProps) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to login if user is not authenticated
-      setLocation(redirect);
-    } else if (!loading && user && allowedRoles && !allowedRoles.includes(user.role)) {
-      // Redirect to home if user is not authorized for this role
-      setLocation("/");
-    }
-  }, [user, loading, allowedRoles, redirect, setLocation]);
-
-  // Show nothing while checking authentication
+  // If the user is not logged in and we're still loading, show a loading spinner
   if (loading) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2 text-lg">Loading...</span>
+      </div>
+    );
   }
 
-  // If no user or not authorized, show nothing (redirect happens in useEffect)
-  if (!user || (allowedRoles && !allowedRoles.includes(user.role))) {
-    return null;
+  // If the user is not logged in, redirect to the login page
+  if (!user) {
+    return <Redirect to={redirect} />;
   }
 
-  // User is authenticated and authorized
+  // If specific roles are required, check if the user has one of them
+  if (allowedRoles && allowedRoles.length > 0) {
+    if (!allowedRoles.includes(user.role)) {
+      // Redirect to dashboard if the user doesn't have the required role
+      return <Redirect to="/" />;
+    }
+  }
+
+  // If the user is logged in and has the required role (or no specific role is required),
+  // render the protected content
   return <>{children}</>;
 }
