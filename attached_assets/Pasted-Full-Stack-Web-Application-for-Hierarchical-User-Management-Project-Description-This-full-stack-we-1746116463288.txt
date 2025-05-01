@@ -1,0 +1,719 @@
+Full Stack Web Application for Hierarchical User Management
+
+Project Description
+
+This full stack web application is designed to manage a hierarchical organization with four user roles: Admin, Manager, Sales Staff, and Agents (divided into Individual Agents, Team Leaders, and Sales Agents within groups). The application is accessible on both web and mobile devices, focusing on user management, attendance tracking, client addition, performance analytics, and reporting. It operates on a login-based authentication system without user registration, where users are created by their superiors. The system ensures strict role-based access control, data isolation between users of the same role, and data persistence even when users are disabled.
+
+Key Features and Functionality
+
+
+
+
+
+Hierarchical User Creation:
+
+
+
+
+
+Admin: A default user created by the system. Admins create Managers by providing Work ID, Email, First Name, Last Name, National ID, and Phone Number.
+
+
+
+Manager: Created by Admin. Managers create Sales Staff with the same details as above.
+
+
+
+Sales Staff: Created by Managers. Sales Staff create Agents (Individual or Group-based, including Team Leaders).
+
+
+
+Agents: Include Individual Agents, Team Leaders, and Sales Agents (in groups). Groups have a minimum of 2 (Team Leader + 1 Sales Agent) and a maximum of 5 (Team Leader + 3 Sales Agents).
+
+
+
+Authentication:
+
+
+
+
+
+Users log in using their Work ID and Email. No registration is required as users are pre-created by their superiors.
+
+
+
+Admins can view and manage failed login attempts (Help Login Requests).
+
+
+
+Role-Based Dashboards: Each role has a dedicated dashboard displaying only their assigned functionalities:
+
+
+
+
+
+Admin Dashboard:
+
+
+
+
+
+Create, update, delete, and view Managers.
+
+
+
+View and manage Help Login Requests.
+
+
+
+Monitor all user activities (logs of actions performed in the system).
+
+
+
+Disable or re-enable any user (data persists when disabled).
+
+
+
+Manager Dashboard:
+
+
+
+
+
+Create, update, delete, and view Sales Staff.
+
+
+
+View Agents created by their Sales Staff.
+
+
+
+Monitor Agent attendance and performance (weekly, monthly, 3-month periods).
+
+
+
+View reports submitted by Sales Staff (including client analytics).
+
+
+
+Disable or re-enable Sales Staff.
+
+
+
+Send/receive messages with Admin and their Sales Staff.
+
+
+
+Sales Staff Dashboard:
+
+
+
+
+
+Create, update, delete, and view Agents (Individual or Group-based).
+
+
+
+Set and update attendance timeframes for their Agents (unique to their Agents).
+
+
+
+Excuse absent Agents to allow client addition.
+
+
+
+View Agent attendance, performance metrics, and submitted reports.
+
+
+
+Disable or re-enable Agents.
+
+
+
+Send/receive messages with Managers, Team Leaders, and Individual Agents.
+
+
+
+Individual Agent Dashboard:
+
+
+
+
+
+Mark daily attendance (select sector: Health, Administration Staff, Private Sectors, Other; and location).
+
+
+
+Add clients (details below).
+
+
+
+View personal performance metrics (weekly, monthly, 3-month periods).
+
+
+
+Submit weekly client reports.
+
+
+
+Send/receive messages with Sales Staff.
+
+
+
+Team Leader Dashboard:
+
+
+
+
+
+Mark daily attendance (same as above).
+
+
+
+Add clients.
+
+
+
+Collect and submit group reports to Sales Staff.
+
+
+
+View personal and group performance metrics.
+
+
+
+Send/receive messages with Sales Staff and Sales Agents in their group.
+
+
+
+Sales Agent (Group) Dashboard:
+
+
+
+
+
+Mark daily attendance (same as above).
+
+
+
+Add clients.
+
+
+
+Submit weekly reports to Team Leader.
+
+
+
+View personal performance metrics.
+
+
+
+Send/receive messages with Team Leader.
+
+
+
+Attendance System:
+
+
+
+
+
+All Agents (Individual, Team Leaders, Sales Agents) must mark attendance before adding clients.
+
+
+
+Attendance requires specifying the sector of activity (Health, Administration Staff, Private Sectors, Other) and work location.
+
+
+
+Sales Staff set attendance timeframes for their Agents. Agents missing the timeframe are marked absent and cannot add clients unless excused by Sales Staff.
+
+
+
+Attendance data is visible to Sales Staff and Managers.
+
+
+
+Client Management:
+
+
+
+
+
+Agents add clients with the following details:
+
+
+
+
+
+Name, National ID, Phone Number, Email.
+
+
+
+Type of Insurance: Education, Intego, Family Insurance, EPI (Employee Protection), Nkunganire Shoferi, Umurage w’Amashuri, Ikimina, Others.
+
+
+
+Payment Method: Salary Deduction, Bank, MoMo.
+
+
+
+Amount (in RWF).
+
+
+
+Clients are linked to the Agent who added them for performance tracking.
+
+
+
+Performance Analytics:
+
+
+
+
+
+Available to Managers, Sales Staff, and Agents (except Admin).
+
+
+
+Metrics include client acquisition analytics (e.g., number of clients added, insurance types, payment methods).
+
+
+
+Viewable in weekly, monthly, and 3-month periods.
+
+
+
+Managers see aggregated data for their Sales Staff and Agents.
+
+
+
+Sales Staff see data for their Agents (Individual and Group).
+
+
+
+Agents see their personal metrics; Team Leaders also see group metrics.
+
+
+
+Reporting:
+
+
+
+
+
+Individual Agents and Sales Agents submit weekly client reports.
+
+
+
+Team Leaders collect reports from Sales Agents and submit a consolidated group report to Sales Staff.
+
+
+
+Sales Staff view and forward reports to Managers.
+
+
+
+Managers view reports for analytics and performance evaluation.
+
+
+
+Messaging:
+
+
+
+
+
+Role-based messaging ensures communication only between authorized users:
+
+
+
+
+
+Admin ↔ Managers.
+
+
+
+Managers ↔ Sales Staff.
+
+
+
+Sales Staff ↔ Individual Agents, Team Leaders.
+
+
+
+Team Leaders ↔ Sales Agents in their group.
+
+
+
+Data Isolation:
+
+
+
+
+
+Managers cannot access other Managers’ data (e.g., Sales Staff, Agents, reports).
+
+
+
+Sales Staff cannot access other Sales Staff’s data, even under the same Manager.
+
+
+
+Attendance timeframes set by one Sales Staff apply only to their Agents.
+
+
+
+User Disabling:
+
+
+
+
+
+Admins can disable/re-enable any user.
+
+
+
+Managers can disable/re-enable their Sales Staff.
+
+
+
+Sales Staff can disable/re-enable their Agents.
+
+
+
+Disabled users’ data (e.g., clients, reports, performance) is preserved.
+
+How It Works
+
+
+
+
+
+Setup:
+
+
+
+
+
+The system initializes with a default Admin account.
+
+
+
+Admin creates Managers, who create Sales Staff, who create Agents (Individual or Group-based).
+
+
+
+Users log in using Work ID and Email.
+
+
+
+Daily Operations:
+
+
+
+
+
+Agents mark attendance within the timeframe set by their Sales Staff, specifying sector and location.
+
+
+
+Agents add clients, which are tracked for performance and reporting.
+
+
+
+Team Leaders manage group reports, while Individual Agents submit directly to Sales Staff.
+
+
+
+Sales Staff monitor attendance, performance, and reports, excusing absences if needed.
+
+
+
+Managers oversee Sales Staff and Agent performance, generating reports for analytics.
+
+
+
+Admins monitor system-wide activities and manage user accounts.
+
+
+
+Data Flow:
+
+
+
+
+
+Client data flows from Agents to Sales Staff (via reports) to Managers (for analytics).
+
+
+
+Attendance data is tracked daily and visible to Sales Staff and Managers.
+
+
+
+Performance metrics are calculated periodically and displayed on dashboards.
+
+
+
+Messages facilitate communication within the hierarchy.
+
+
+
+Security and Access Control:
+
+
+
+
+
+Role-based access ensures users only see their authorized data and functionalities.
+
+
+
+Data isolation prevents cross-access between Managers or Sales Staff.
+
+
+
+Failed login attempts are logged for Admin review.
+
+
+
+Mobile Compatibility:
+
+
+
+
+
+The application is responsive, with dashboards optimized for both web and mobile devices.
+
+
+
+Agents can mark attendance and add clients on the go, while Managers and Sales Staff can monitor activities remotely.
+
+Database Schema
+
+The database schema is designed to support the hierarchical structure, role-based access, and data isolation. Below is a conceptual schema without implementation details:
+
+
+
+
+
+Users Table:
+
+
+
+
+
+Stores all users (Admin, Managers, Sales Staff, Agents).
+
+
+
+Columns: UserID (Primary Key), WorkID (Unique), Email, FirstName, LastName, NationalID, PhoneNumber, Role (Admin/Manager/SalesStaff/Agent), CreatedBy (Foreign Key to UserID, null for Admin), IsActive (Boolean, default True), CreatedAt, UpdatedAt.
+
+
+
+AgentGroups Table:
+
+
+
+
+
+Stores group-based Agents (Team Leader + Sales Agents).
+
+
+
+Columns: GroupID (Primary Key), TeamLeaderID (Foreign Key to UserID), SalesStaffID (Foreign Key to UserID), CreatedAt, UpdatedAt.
+
+
+
+GroupMembers Table:
+
+
+
+
+
+Maps Sales Agents to groups.
+
+
+
+Columns: GroupMemberID (Primary Key), GroupID (Foreign Key), AgentID (Foreign Key to UserID), CreatedAt.
+
+
+
+Attendance Table:
+
+
+
+
+
+Tracks daily attendance for Agents.
+
+
+
+Columns: AttendanceID (Primary Key), AgentID (Foreign Key to UserID), Date, Sector (Health/AdminStaff/PrivateSectors/Other), CustomSector (nullable), Location, IsExcused (Boolean, default False), CreatedAt.
+
+
+
+AttendanceTimeframes Table:
+
+
+
+
+
+Stores attendance timeframes set by Sales Staff.
+
+
+
+Columns: TimeframeID (Primary Key), SalesStaffID (Foreign Key to UserID), StartTime, EndTime, CreatedAt, UpdatedAt.
+
+
+
+Clients Table:
+
+
+
+
+
+Stores client data added by Agents.
+
+
+
+Columns: ClientID (Primary Key), AgentID (Foreign Key to UserID), Name, NationalID, PhoneNumber, Email, InsuranceType (Education/Intego/FamilyInsurance/EPI/NkunganireShoferi/UmurageAmashuri/Ikimina/Others), PaymentMethod (SalaryDeduction/Bank/MoMo), Amount (Decimal), CreatedAt.
+
+
+
+Reports Table:
+
+
+
+
+
+Stores weekly reports submitted by Agents.
+
+
+
+Columns: ReportID (Primary Key), AgentID (Foreign Key to UserID), GroupID (Foreign Key, nullable for Individual Agents), WeekStartDate, ClientCount, Details (JSON/Text for client summaries), SubmittedTo (Foreign Key to UserID, e.g., Sales Staff or Team Leader), CreatedAt.
+
+
+
+Messages Table:
+
+
+
+
+
+Stores messages between users.
+
+
+
+Columns: MessageID (Primary Key), SenderID (Foreign Key to UserID), ReceiverID (Foreign Key to UserID), Content, SentAt, ReadAt (nullable).
+
+
+
+LoginHelpRequests Table:
+
+
+
+
+
+Tracks failed login attempts for Admin review.
+
+
+
+Columns: RequestID (Primary Key), WorkID, Email, AttemptAt, Status (Pending/Resolved).
+
+
+
+ActivityLogs Table:
+
+
+
+
+
+Logs user actions for Admin monitoring.
+
+
+
+Columns: LogID (Primary Key), UserID (Foreign Key to UserID), Action (e.g., CreateUser, DisableUser), Details (JSON/Text), CreatedAt.
+
+
+
+PerformanceMetrics Table:
+
+
+
+
+
+Stores pre-calculated performance data for analytics.
+
+
+
+Columns: MetricID (Primary Key), UserID (Foreign Key to UserID), Period (Weekly/Monthly/3Months), ClientCount, InsuranceTypeBreakdown (JSON), PaymentMethodBreakdown (JSON), CreatedAt.
+
+Relationships
+
+
+
+
+
+Users: Self-referential (CreatedBy links to another UserID, except for Admin).
+
+
+
+AgentGroups: Links to Users (TeamLeaderID, SalesStaffID).
+
+
+
+GroupMembers: Links AgentGroups and Users.
+
+
+
+Attendance: Links to Users (AgentID) and AttendanceTimeframes (implicitly via SalesStaffID).
+
+
+
+Clients: Links to Users (AgentID).
+
+
+
+Reports: Links to Users (AgentID, SubmittedTo) and AgentGroups (for group reports).
+
+
+
+Messages: Links to Users (SenderID, ReceiverID).
+
+
+
+LoginHelpRequests: No direct foreign keys but uses WorkID and Email for reference.
+
+
+
+ActivityLogs: Links to Users (UserID).
+
+
+
+PerformanceMetrics: Links to Users (UserID).
+
+Constraints
+
+
+
+
+
+Unique constraints on WorkID and Email in Users.
+
+
+
+Role-based access enforced via application logic.
+
+
+
+Group size constraints (2–5 members) enforced via application logic.
+
+
+
+Attendance required before client addition, enforced via application logic.
+
+
+
+Data isolation (e.g., Managers, Sales Staff) enforced via filtering on CreatedBy and SalesStaffID.

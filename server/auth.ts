@@ -105,7 +105,19 @@ export function setupAuth(app: Express) {
           createdAt: new Date()
         });
 
-        return res.status(200).json(user);
+        // Return the user in the expected format for the client
+        return res.status(200).json({ 
+          message: 'Login successful', 
+          user: {
+            id: user.id,
+            workId: user.workId,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            status: user.status
+          }
+        });
       });
     })(req, res, next);
   });
@@ -134,7 +146,8 @@ export function setupAuth(app: Express) {
     if (!req.isAuthenticated()) {
       return res.status(401).json({ message: 'Unauthorized: Please log in' });
     }
-    res.json(req.user);
+    // Match the response format expected by the client
+    res.json({ user: req.user });
   });
 
   app.post('/api/auth/help-request', async (req, res, next) => {
