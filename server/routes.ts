@@ -1,8 +1,6 @@
 import express, { type Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import session from "express-session";
-import MemoryStore from "memorystore";
 import {
   loginSchema,
   helpRequestSchema,
@@ -17,23 +15,13 @@ import {
 } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { setupAuth } from "./auth";
 
-// Create session store
-const MemoryStoreSession = MemoryStore(session);
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session middleware
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || 'organization-management-secret',
-      resave: false,
-      saveUninitialized: false,
-      cookie: { secure: false, maxAge: 86400000 }, // 24 hours
-      store: new MemoryStoreSession({
-        checkPeriod: 86400000 // prune expired entries every 24h
-      })
-    })
-  );
+  // Setup authentication with passport
+  setupAuth(app);
 
   // Middleware to check if user is authenticated
   const isAuthenticated = (req: Request, res: Response, next: any) => {
