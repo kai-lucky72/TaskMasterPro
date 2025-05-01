@@ -132,9 +132,17 @@ export class MemStorage implements IStorage {
     this.currentMessageId = 1;
     this.currentLoginHelpRequestId = 1;
     this.currentActivityLogId = 1;
+    
+    // Create initial users
+    this.createInitialUsers();
+  }
 
-    // Create default admin user
-    this.createUser({
+  // User operations
+  // Create initial users for testing
+  private createInitialUsers() {
+    // Create an admin user
+    this.users.set(1, {
+      id: 1,
       workId: 'ADMIN-001',
       email: 'admin@example.com',
       firstName: 'System',
@@ -142,11 +150,87 @@ export class MemStorage implements IStorage {
       nationalId: 'ADM12345678',
       phoneNumber: '+250781234567',
       role: 'admin',
-      status: 'active'
+      status: 'active',
+      createdAt: new Date(),
+      createdById: null,
+      managerId: null,
+      salesStaffId: null
     });
+    this.currentUserId = 2;
+
+    // Create a manager
+    this.users.set(2, {
+      id: 2,
+      workId: 'MGR-001',
+      email: 'manager@example.com',
+      firstName: 'John',
+      lastName: 'Manager',
+      nationalId: 'MGR12345678',
+      phoneNumber: '+250782345678',
+      role: 'manager',
+      status: 'active',
+      createdAt: new Date(),
+      createdById: 1,
+      managerId: null,
+      salesStaffId: null
+    });
+    this.currentUserId = 3;
+
+    // Create a sales staff
+    this.users.set(3, {
+      id: 3,
+      workId: 'STAFF-001',
+      email: 'sales@example.com',
+      firstName: 'Sarah',
+      lastName: 'Sales',
+      nationalId: 'SLS12345678',
+      phoneNumber: '+250783456789',
+      role: 'sales_staff',
+      status: 'active',
+      createdAt: new Date(),
+      createdById: 2,
+      managerId: 2,
+      salesStaffId: null
+    });
+    this.currentUserId = 4;
+
+    // Create a team leader
+    this.users.set(4, {
+      id: 4,
+      workId: 'LEAD-001',
+      email: 'leader@example.com',
+      firstName: 'Tom',
+      lastName: 'Leader',
+      nationalId: 'LDR12345678',
+      phoneNumber: '+250784567890',
+      role: 'team_leader',
+      status: 'active',
+      createdAt: new Date(),
+      createdById: 3,
+      managerId: null,
+      salesStaffId: 3
+    });
+    this.currentUserId = 5;
+
+    // Create sales agents
+    this.users.set(5, {
+      id: 5,
+      workId: 'AGENT-001',
+      email: 'agent1@example.com',
+      firstName: 'Alan',
+      lastName: 'Agent',
+      nationalId: 'AGT12345678',
+      phoneNumber: '+250785678901',
+      role: 'sales_agent',
+      status: 'active',
+      createdAt: new Date(),
+      createdById: 4,
+      managerId: null,
+      salesStaffId: 3
+    });
+    this.currentUserId = 6;
   }
 
-  // User operations
   async getUserById(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
