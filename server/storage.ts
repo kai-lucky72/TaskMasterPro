@@ -636,4 +636,417 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+import session from 'express-session';
+import connectPg from 'connect-pg-simple';
+import { eq, and, desc, asc, isNull, or, inArray } from 'drizzle-orm';
+import { db, pool } from './db';
+
+const PostgresSessionStore = connectPg(session);
+
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+  
+  constructor() {
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
+    });
+  }
+
+  // User operations
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByWorkId(workId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.workId, workId));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUsersByRole(role: string): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.role, role));
+  }
+
+  async getUsersByManagerId(managerId: number): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.managerId, managerId));
+  }
+
+  async getUsersBySalesStaffId(salesStaffId: number): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.salesStaffId, salesStaffId));
+  }
+
+  async createUser(userData: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(userData).returning();
+    return user;
+  }
+
+  async updateUser(id: number, userData: Partial<InsertUser>): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(userData)
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.count > 0;
+  }
+
+  async disableUser(id: number): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ status: 'disabled' })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  async enableUser(id: number): Promise<User | undefined> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ status: 'active' })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
+
+  // Agent group operations
+  async getAgentGroupById(id: number): Promise<AgentGroup | undefined> {
+    const [group] = await db.select().from(agentGroups).where(eq(agentGroups.id, id));
+    return group;
+  }
+
+  async getAgentGroupsBySalesStaffId(salesStaffId: number): Promise<AgentGroup[]> {
+    return await db.select().from(agentGroups).where(eq(agentGroups.salesStaffId, salesStaffId));
+  }
+
+  async createAgentGroup(groupData: InsertAgentGroup): Promise<AgentGroup> {
+    const [group] = await db.insert(agentGroups).values(groupData).returning();
+    return group;
+  }
+
+  async updateAgentGroup(id: number, groupData: Partial<InsertAgentGroup>): Promise<AgentGroup | undefined> {
+    const [updatedGroup] = await db
+      .update(agentGroups)
+      .set(groupData)
+      .where(eq(agentGroups.id, id))
+      .returning();
+    return updatedGroup;
+  }
+
+  async deleteAgentGroup(id: number): Promise<boolean> {
+    const result = await db.delete(agentGroups).where(eq(agentGroups.id, id));
+    return result.count > 0;
+  }
+
+  // Group member operations
+  async addMemberToGroup(memberData: InsertGroupMember): Promise<GroupMember> {
+    const [member] = await db.insert(groupMembers).values(memberData).returning();
+    return member;
+  }
+
+  async removeMemberFromGroup(groupId: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(groupMembers)
+      .where(
+        and(
+          eq(groupMembers.groupId, groupId),
+          eq(groupMembers.userId, userId)
+        )
+      );
+    return result.count > 0;
+  }
+
+  async getGroupMembers(groupId: number): Promise<GroupMember[]> {
+    return await db.select().from(groupMembers).where(eq(groupMembers.groupId, groupId));
+  }
+
+  async getUserGroups(userId: number): Promise<GroupMember[]> {
+    return await db.select().from(groupMembers).where(eq(groupMembers.userId, userId));
+  }
+
+  // Attendance timeframe operations
+  async createAttendanceTimeframe(timeframeData: InsertAttendanceTimeframe): Promise<AttendanceTimeframe> {
+    const [timeframe] = await db.insert(attendanceTimeframes).values(timeframeData).returning();
+    return timeframe;
+  }
+
+  async getAttendanceTimeframesBySalesStaffId(salesStaffId: number): Promise<AttendanceTimeframe[]> {
+    return await db
+      .select()
+      .from(attendanceTimeframes)
+      .where(eq(attendanceTimeframes.salesStaffId, salesStaffId));
+  }
+
+  async updateAttendanceTimeframe(id: number, timeframeData: Partial<InsertAttendanceTimeframe>): Promise<AttendanceTimeframe | undefined> {
+    const [updatedTimeframe] = await db
+      .update(attendanceTimeframes)
+      .set(timeframeData)
+      .where(eq(attendanceTimeframes.id, id))
+      .returning();
+    return updatedTimeframe;
+  }
+
+  async deleteAttendanceTimeframe(id: number): Promise<boolean> {
+    const result = await db.delete(attendanceTimeframes).where(eq(attendanceTimeframes.id, id));
+    return result.count > 0;
+  }
+
+  // Attendance operations
+  async markAttendance(attendanceData: InsertAttendance): Promise<Attendance> {
+    const [record] = await db.insert(attendance).values(attendanceData).returning();
+    return record;
+  }
+
+  async getUserAttendance(userId: number): Promise<Attendance[]> {
+    return await db.select().from(attendance).where(eq(attendance.userId, userId));
+  }
+
+  async getUserAttendanceByDate(userId: number, date: Date): Promise<Attendance | undefined> {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    const [record] = await db
+      .select()
+      .from(attendance)
+      .where(
+        and(
+          eq(attendance.userId, userId),
+          eq(attendance.date, targetDate)
+        )
+      );
+    return record;
+  }
+
+  async excuseAbsence(id: number, excusedById: number, reason: string): Promise<Attendance | undefined> {
+    const [updatedRecord] = await db
+      .update(attendance)
+      .set({
+        isExcused: true,
+        excusedById,
+        excuseReason: reason
+      })
+      .where(eq(attendance.id, id))
+      .returning();
+    return updatedRecord;
+  }
+
+  async getAttendanceBySalesStaffId(salesStaffId: number): Promise<Attendance[]> {
+    // Get all agents under this sales staff
+    const agents = await this.getUsersBySalesStaffId(salesStaffId);
+    const agentIds = agents.map(agent => agent.id);
+    
+    if (agentIds.length === 0) return [];
+    
+    return await db
+      .select()
+      .from(attendance)
+      .where(inArray(attendance.userId, agentIds));
+  }
+
+  // Client operations
+  async createClient(clientData: InsertClient): Promise<Client> {
+    const [client] = await db.insert(clients).values(clientData).returning();
+    return client;
+  }
+
+  async getClientsByAgentId(agentId: number): Promise<Client[]> {
+    return await db.select().from(clients).where(eq(clients.agentId, agentId));
+  }
+
+  async getClientsByTeamLeaderId(teamLeaderId: number): Promise<Client[]> {
+    // Get all agent groups where this user is a team leader
+    const teamGroups = await db
+      .select()
+      .from(agentGroups)
+      .where(eq(agentGroups.teamLeaderId, teamLeaderId));
+    
+    if (teamGroups.length === 0) return [];
+    
+    // Get all group members in these groups
+    const groupIds = teamGroups.map(group => group.id);
+    const members = await db
+      .select()
+      .from(groupMembers)
+      .where(inArray(groupMembers.groupId, groupIds));
+    
+    if (members.length === 0) return [];
+    
+    // Get all agent IDs
+    const agentIds = members.map(member => member.userId);
+    
+    // Get all clients for these agents
+    return await db
+      .select()
+      .from(clients)
+      .where(inArray(clients.agentId, agentIds));
+  }
+
+  async getClientsBySalesStaffId(salesStaffId: number): Promise<Client[]> {
+    // Get all agents under this sales staff
+    const agents = await this.getUsersBySalesStaffId(salesStaffId);
+    const agentIds = agents.map(agent => agent.id);
+    
+    if (agentIds.length === 0) return [];
+    
+    // Get all clients for these agents
+    return await db
+      .select()
+      .from(clients)
+      .where(inArray(clients.agentId, agentIds));
+  }
+
+  async updateClient(id: number, clientData: Partial<InsertClient>): Promise<Client | undefined> {
+    const [updatedClient] = await db
+      .update(clients)
+      .set(clientData)
+      .where(eq(clients.id, id))
+      .returning();
+    return updatedClient;
+  }
+
+  async deleteClient(id: number): Promise<boolean> {
+    const result = await db.delete(clients).where(eq(clients.id, id));
+    return result.count > 0;
+  }
+
+  // Report operations
+  async createReport(reportData: InsertReport): Promise<Report> {
+    const [report] = await db.insert(reports).values(reportData).returning();
+    return report;
+  }
+
+  async getReportsByUserId(userId: number): Promise<Report[]> {
+    return await db.select().from(reports).where(eq(reports.userId, userId));
+  }
+
+  async getReportsByTeamLeaderId(teamLeaderId: number): Promise<Report[]> {
+    return await db.select().from(reports).where(eq(reports.teamLeaderId, teamLeaderId));
+  }
+
+  async getReportsBySalesStaffId(salesStaffId: number): Promise<Report[]> {
+    return await db.select().from(reports).where(eq(reports.salesStaffId, salesStaffId));
+  }
+
+  async getReportsByManagerId(managerId: number): Promise<Report[]> {
+    return await db.select().from(reports).where(eq(reports.managerId, managerId));
+  }
+
+  async updateReport(id: number, reportData: Partial<InsertReport>): Promise<Report | undefined> {
+    const [updatedReport] = await db
+      .update(reports)
+      .set(reportData)
+      .where(eq(reports.id, id))
+      .returning();
+    return updatedReport;
+  }
+
+  async deleteReport(id: number): Promise<boolean> {
+    const result = await db.delete(reports).where(eq(reports.id, id));
+    return result.count > 0;
+  }
+
+  // Message operations
+  async sendMessage(messageData: InsertMessage): Promise<Message> {
+    const [message] = await db.insert(messages).values(messageData).returning();
+    return message;
+  }
+
+  async getMessagesBySenderId(senderId: number): Promise<Message[]> {
+    return await db.select().from(messages).where(eq(messages.senderId, senderId));
+  }
+
+  async getMessagesByReceiverId(receiverId: number): Promise<Message[]> {
+    return await db.select().from(messages).where(eq(messages.receiverId, receiverId));
+  }
+
+  async getConversation(user1Id: number, user2Id: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(
+        or(
+          and(
+            eq(messages.senderId, user1Id),
+            eq(messages.receiverId, user2Id)
+          ),
+          and(
+            eq(messages.senderId, user2Id),
+            eq(messages.receiverId, user1Id)
+          )
+        )
+      )
+      .orderBy(asc(messages.createdAt));
+  }
+
+  async markMessageAsRead(id: number): Promise<Message | undefined> {
+    const [updatedMessage] = await db
+      .update(messages)
+      .set({ isRead: true })
+      .where(eq(messages.id, id))
+      .returning();
+    return updatedMessage;
+  }
+
+  // Login help request operations
+  async createLoginHelpRequest(requestData: InsertLoginHelpRequest): Promise<LoginHelpRequest> {
+    const [request] = await db.insert(loginHelpRequests).values(requestData).returning();
+    return request;
+  }
+
+  async getLoginHelpRequests(): Promise<LoginHelpRequest[]> {
+    return await db
+      .select()
+      .from(loginHelpRequests)
+      .where(isNull(loginHelpRequests.resolvedById));
+  }
+
+  async resolveLoginHelpRequest(id: number, resolvedById: number): Promise<LoginHelpRequest | undefined> {
+    const [updatedRequest] = await db
+      .update(loginHelpRequests)
+      .set({
+        resolvedById,
+        resolvedAt: new Date()
+      })
+      .where(eq(loginHelpRequests.id, id))
+      .returning();
+    return updatedRequest;
+  }
+
+  async deleteLoginHelpRequest(id: number): Promise<boolean> {
+    const result = await db.delete(loginHelpRequests).where(eq(loginHelpRequests.id, id));
+    return result.count > 0;
+  }
+
+  // Activity log operations
+  async logActivity(logData: InsertActivityLog): Promise<ActivityLog> {
+    const [log] = await db.insert(activityLogs).values(logData).returning();
+    return log;
+  }
+
+  async getActivityLogsByUserId(userId: number): Promise<ActivityLog[]> {
+    return await db
+      .select()
+      .from(activityLogs)
+      .where(eq(activityLogs.userId, userId))
+      .orderBy(desc(activityLogs.createdAt));
+  }
+
+  async getRecentActivityLogs(limit: number): Promise<ActivityLog[]> {
+    return await db
+      .select()
+      .from(activityLogs)
+      .orderBy(desc(activityLogs.createdAt))
+      .limit(limit);
+  }
+}
+
+export const storage = new DatabaseStorage();
