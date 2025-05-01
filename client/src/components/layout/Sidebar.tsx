@@ -1,266 +1,164 @@
-import { useAuth } from "@/context/AuthContext";
-import { Link, useLocation } from "wouter";
-import { useEffect, useState } from "react";
-import { roleColors } from "@/types";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import UserAvatar from "./UserAvatar";
-import { 
-  LayoutDashboard, Users, HelpCircle, BarChart3, Settings, LogOut,
-  Clock, UserCheck, FileText, MessageSquare, UserPlus, User, Briefcase
-} from "lucide-react";
+import { useLocation, Link } from 'wouter';
+import { useAuth } from '@/context/AuthContext';
+import {
+  LayoutDashboard,
+  Users,
+  ClipboardList,
+  Calendar,
+  MessageSquare,
+  BarChart2,
+  FileText,
+  HelpCircle,
+  Activity,
+  Settings,
+  LogOut,
+} from 'lucide-react';
 
-interface SidebarProps {
-  className?: string;
-}
-
-export default function Sidebar({ className }: SidebarProps) {
-  const { user, logout } = useAuth();
+const Sidebar = () => {
   const [location] = useLocation();
-  const [menuItems, setMenuItems] = useState<Array<{ icon: React.ReactNode; label: string; href: string }>>([]);
+  const { user, logout } = useAuth();
 
-  useEffect(() => {
-    if (!user) return;
+  // Define navigation items based on user role
+  const getNavItems = () => {
+    // Common items for all roles
+    const commonItems = [
+      {
+        name: 'Dashboard',
+        href: '/',
+        icon: <LayoutDashboard className="h-5 w-5" />,
+      },
+      {
+        name: 'Performance',
+        href: '/performance',
+        icon: <BarChart2 className="h-5 w-5" />,
+      },
+      {
+        name: 'Reports',
+        href: '/reports',
+        icon: <FileText className="h-5 w-5" />,
+      },
+      {
+        name: 'Attendance',
+        href: '/attendance',
+        icon: <Calendar className="h-5 w-5" />,
+      },
+      {
+        name: 'Messages',
+        href: '/messages',
+        icon: <MessageSquare className="h-5 w-5" />,
+      },
+      {
+        name: 'Settings',
+        href: '/settings',
+        icon: <Settings className="h-5 w-5" />,
+      },
+    ];
 
-    const items = [];
-    
-    // Common item for all roles
-    items.push({ 
-      icon: <LayoutDashboard className="w-5 h-5" />, 
-      label: "Dashboard", 
-      href: "/" 
-    });
+    // Role-specific items
+    const roleItems: Record<string, Array<{ name: string; href: string; icon: JSX.Element }>> = {
+      admin: [
+        {
+          name: 'Managers',
+          href: '/managers',
+          icon: <Users className="h-5 w-5" />,
+        },
+        {
+          name: 'Help Requests',
+          href: '/help-requests',
+          icon: <HelpCircle className="h-5 w-5" />,
+        },
+        {
+          name: 'Activities',
+          href: '/activities',
+          icon: <Activity className="h-5 w-5" />,
+        },
+      ],
+      manager: [
+        {
+          name: 'Sales Staff',
+          href: '/sales-staff',
+          icon: <Users className="h-5 w-5" />,
+        },
+      ],
+      sales_staff: [
+        {
+          name: 'Agents',
+          href: '/agents',
+          icon: <Users className="h-5 w-5" />,
+        },
+      ],
+      team_leader: [
+        {
+          name: 'Team',
+          href: '/team',
+          icon: <Users className="h-5 w-5" />,
+        },
+      ],
+    };
 
-    // Role-specific menu items
-    switch (user.role) {
-      case "admin":
-        items.push({ 
-          icon: <Users className="w-5 h-5" />, 
-          label: "Manage Managers", 
-          href: "/managers" 
-        });
-        items.push({ 
-          icon: <HelpCircle className="w-5 h-5" />, 
-          label: "Help Requests", 
-          href: "/help-requests" 
-        });
-        items.push({ 
-          icon: <BarChart3 className="w-5 h-5" />, 
-          label: "User Activities", 
-          href: "/activities" 
-        });
-        break;
-        
-      case "manager":
-        items.push({ 
-          icon: <Users className="w-5 h-5" />, 
-          label: "Sales Staff", 
-          href: "/sales-staff" 
-        });
-        items.push({ 
-          icon: <UserCheck className="w-5 h-5" />, 
-          label: "Attendance", 
-          href: "/attendance" 
-        });
-        items.push({ 
-          icon: <BarChart3 className="w-5 h-5" />, 
-          label: "Performance", 
-          href: "/performance" 
-        });
-        items.push({ 
-          icon: <FileText className="w-5 h-5" />, 
-          label: "Reports", 
-          href: "/reports" 
-        });
-        items.push({ 
-          icon: <MessageSquare className="w-5 h-5" />, 
-          label: "Messages", 
-          href: "/messages" 
-        });
-        break;
-        
-      case "sales_staff":
-        items.push({ 
-          icon: <Users className="w-5 h-5" />, 
-          label: "Agents", 
-          href: "/agents" 
-        });
-        items.push({ 
-          icon: <Clock className="w-5 h-5" />, 
-          label: "Attendance", 
-          href: "/attendance" 
-        });
-        items.push({ 
-          icon: <BarChart3 className="w-5 h-5" />, 
-          label: "Performance", 
-          href: "/performance" 
-        });
-        items.push({ 
-          icon: <FileText className="w-5 h-5" />, 
-          label: "Reports", 
-          href: "/reports" 
-        });
-        items.push({ 
-          icon: <MessageSquare className="w-5 h-5" />, 
-          label: "Messages", 
-          href: "/messages" 
-        });
-        break;
-        
-      case "individual_agent":
-        items.push({ 
-          icon: <Clock className="w-5 h-5" />, 
-          label: "Attendance", 
-          href: "/attendance" 
-        });
-        items.push({ 
-          icon: <Briefcase className="w-5 h-5" />, 
-          label: "Clients", 
-          href: "/clients" 
-        });
-        items.push({ 
-          icon: <BarChart3 className="w-5 h-5" />, 
-          label: "Performance", 
-          href: "/performance" 
-        });
-        items.push({ 
-          icon: <FileText className="w-5 h-5" />, 
-          label: "Reports", 
-          href: "/reports" 
-        });
-        items.push({ 
-          icon: <MessageSquare className="w-5 h-5" />, 
-          label: "Messages", 
-          href: "/messages" 
-        });
-        break;
-        
-      case "team_leader":
-        items.push({ 
-          icon: <Clock className="w-5 h-5" />, 
-          label: "Attendance", 
-          href: "/attendance" 
-        });
-        items.push({ 
-          icon: <Briefcase className="w-5 h-5" />, 
-          label: "Clients", 
-          href: "/clients" 
-        });
-        items.push({ 
-          icon: <Users className="w-5 h-5" />, 
-          label: "Team", 
-          href: "/team" 
-        });
-        items.push({ 
-          icon: <BarChart3 className="w-5 h-5" />, 
-          label: "Performance", 
-          href: "/performance" 
-        });
-        items.push({ 
-          icon: <FileText className="w-5 h-5" />, 
-          label: "Reports", 
-          href: "/reports" 
-        });
-        items.push({ 
-          icon: <MessageSquare className="w-5 h-5" />, 
-          label: "Messages", 
-          href: "/messages" 
-        });
-        break;
-        
-      case "sales_agent":
-        items.push({ 
-          icon: <Clock className="w-5 h-5" />, 
-          label: "Attendance", 
-          href: "/attendance" 
-        });
-        items.push({ 
-          icon: <Briefcase className="w-5 h-5" />, 
-          label: "Clients", 
-          href: "/clients" 
-        });
-        items.push({ 
-          icon: <BarChart3 className="w-5 h-5" />, 
-          label: "Performance", 
-          href: "/performance" 
-        });
-        items.push({ 
-          icon: <FileText className="w-5 h-5" />, 
-          label: "Reports", 
-          href: "/reports" 
-        });
-        items.push({ 
-          icon: <MessageSquare className="w-5 h-5" />, 
-          label: "Messages", 
-          href: "/messages" 
-        });
-        break;
+    // Include clients for relevant roles
+    if (['sales_staff', 'team_leader', 'individual_agent', 'sales_agent'].includes(user?.role || '')) {
+      commonItems.push({
+        name: 'Clients',
+        href: '/clients',
+        icon: <ClipboardList className="h-5 w-5" />,
+      });
     }
 
-    // Common settings menu item
-    items.push({ 
-      icon: <Settings className="w-5 h-5" />, 
-      label: "Settings", 
-      href: "/settings" 
-    });
+    return [...commonItems, ...(roleItems[user?.role || ''] || [])];
+  };
 
-    setMenuItems(items);
-  }, [user]);
-
-  if (!user) return null;
-
-  const roleColor = roleColors[user.role];
-  const headerGradient = { background: roleColor.gradient };
+  const navItems = getNavItems();
 
   return (
-    <aside className={cn("flex flex-col bg-white border-r border-slate-200 w-64 h-full", className)}>
-      <div className="p-4 text-white" style={headerGradient}>
-        <h1 className="font-bold text-xl">OrganizationPro</h1>
-        <p className="text-xs opacity-80 mt-1">
-          {user.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} Dashboard
-        </p>
-      </div>
-      
-      <div className="flex items-center px-4 py-4 border-b border-slate-200">
-        <UserAvatar user={user} />
+    <aside className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
+      {/* Logo and Title */}
+      <div className="p-4 flex items-center border-b border-gray-200">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">H</div>
         <div className="ml-3">
-          <p className="font-semibold text-sm">{user.firstName} {user.lastName}</p>
-          <p className="text-xs text-slate-500">{user.email}</p>
+          <h1 className="font-bold text-lg">OrganizeHQ</h1>
+          <p className="text-xs text-gray-500">{user?.role && user.role.replace('_', ' ')}</p>
         </div>
       </div>
-      
-      <nav className="flex-1 py-4 overflow-y-auto">
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1 px-2">
-          {menuItems.map((item, index) => (
-            <li key={index}>
-              <Link href={item.href}>
-                <a
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200",
-                    location === item.href ? 
-                      `${roleColor.background} text-${user.role === "admin" ? "blue" : user.role === "manager" ? "purple" : user.role === "sales_staff" ? "green" : "orange"}-700` : 
-                      "hover:bg-slate-100"
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.label}</span>
-                </a>
-              </Link>
-            </li>
-          ))}
+          {navItems.map((item) => {
+            const isActive = location === item.href;
+            return (
+              <li key={item.href}>
+                <Link href={item.href}>
+                  <a
+                    className={`flex items-center px-4 py-2.5 text-sm rounded-lg transition-colors ${isActive
+                      ? 'bg-blue-50 text-blue-700 font-semibold'
+                      : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                  >
+                    <span className={`${isActive ? 'text-blue-700' : 'text-gray-500'}`}>
+                      {item.icon}
+                    </span>
+                    <span className="ml-3">{item.name}</span>
+                  </a>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
-      
-      <div className="p-4 border-t border-slate-200">
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start hover:bg-slate-100 px-4 py-3" 
-          onClick={async () => await logout()}
+
+      {/* Logout button */}
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={() => logout()}
+          className="flex w-full items-center px-4 py-2.5 text-sm rounded-lg text-red-600 hover:bg-red-50 transition-colors"
         >
-          <LogOut className="w-5 h-5 mr-3" />
-          <span>Logout</span>
-        </Button>
+          <LogOut className="h-5 w-5" />
+          <span className="ml-3">Logout</span>
+        </button>
       </div>
     </aside>
   );
-}
+};
+
+export default Sidebar;

@@ -1,107 +1,129 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { authService } from '@/lib/auth';
-import { AuthUser } from '@/types';
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { User, UserRole } from '@/types';
 
 interface AuthContextType {
-  user: AuthUser | null;
+  user: User | null;
   loading: boolean;
-  login: (workId: string, email: string) => Promise<void>;
+  login: (email: string, workId: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => void;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: true,
-  login: async () => {},
-  logout: async () => {},
-  refreshUser: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const refreshUser = async () => {
-    try {
-      const userData = await authService.getCurrentUser();
-      setUser(userData);
-    } catch (error) {
-      console.error('Error refreshing user:', error);
-      setUser(null);
-    }
-  };
-
-  useEffect(() => {
-    const initAuth = async () => {
-      setLoading(true);
+  // Fetch current user
+  const { data: user, refetch } = useQuery({
+    queryKey: ['/api/auth/me'],
+    queryFn: async () => {
       try {
-        await refreshUser();
+        const res = await apiRequest('GET', '/api/auth/me');
+        const data = await res.json();
+        return data.user as User;
       } catch (error) {
-        console.error('Error initializing auth:', error);
-      } finally {
-        setLoading(false);
+        // If not logged in, just return null without an error
+        if ((error as Response)?.status === 401) {
+          return null;
+        }
+        throw error;
       }
-    };
+    },
+    retry: false,
+    // Don't refetch on window focus to avoid disrupting user flow
+    refetchOnWindowFocus: false,
+  });
 
-    initAuth();
-  }, []);
-
-  const login = async (workId: string, email: string) => {
-    try {
-      const { user } = await authService.login({ workId, email });
-      setUser(user);
+  // Login mutation
+  const loginMutation = useMutation({
+    mutationFn: async ({ email, workId }: { email: string; workId: string }) => {
+      const res = await apiRequest('POST', '/api/auth/login', { email, workId });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      // Refetch user data after successful login
+      refetch();
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.firstName}!`,
+        title: 'Login successful',
+        description: 'You are now logged in',
       });
-    } catch (error) {
-      console.error('Login error:', error);
-      
-      if (error instanceof Error) {
-        toast({
-          title: "Login failed",
-          description: error.message || "Invalid credentials. Please try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login failed",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
-      }
-      
-      throw error;
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Login failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Logout mutation
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest('POST', '/api/auth/logout');
+      return res.json();
+    },
+    onSuccess: () => {
+      // Clear user data after logout
+      queryClient.setQueryData(['/api/auth/me'], null);
+      toast({
+        title: 'Logout successful',
+        description: 'You have been logged out',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Logout failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Login function
+  const login = async (email: string, workId: string) => {
+    await loginMutation.mutateAsync({ email, workId });
   };
 
+  // Logout function
   const logout = async () => {
-    try {
-      await authService.logout();
-      setUser(null);
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast({
-        title: "Logout failed",
-        description: "Failed to log out. Please try again.",
-        variant: "destructive",
-      });
-      throw error;
-    }
+    await logoutMutation.mutateAsync();
   };
 
-  return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  // Function to refresh user data
+  const refreshUser = () => refetch();
+
+  // Update loading state when user data is fetched
+  useEffect(() => {
+    if (user !== undefined) {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const value = {
+    user: user || null,
+    loading,
+    login,
+    logout,
+    refreshUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

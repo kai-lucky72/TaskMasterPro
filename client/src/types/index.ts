@@ -1,9 +1,9 @@
 export type UserRole = 
-  | 'admin'
-  | 'manager'
-  | 'sales_staff'
-  | 'individual_agent'
-  | 'team_leader'
+  | 'admin' 
+  | 'manager' 
+  | 'sales_staff' 
+  | 'team_leader' 
+  | 'individual_agent' 
   | 'sales_agent';
 
 export type UserStatus = 'active' | 'disabled';
@@ -14,59 +14,104 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
+  nationalId: string;
+  phoneNumber: string;
   role: UserRole;
   status: UserStatus;
-  createdAt?: string;
-  managerId?: number | null;
-  salesStaffId?: number | null;
+  createdAt: Date;
+  createdById: number | null;
+  managerId: number | null;
+  salesStaffId: number | null;
 }
 
-export interface AuthUser extends User {
-  // Additional properties that might be included in auth context
+export interface Team {
+  id: number;
+  name: string;
+  createdAt: Date;
+  salesStaffId: number;
+  teamLeaderId: number | null;
 }
 
-export interface ThemeColors {
-  primary: string;
-  secondary: string;
-  gradient: string;
-  background: string;
+export interface Client {
+  id: number;
+  name: string;
+  email: string | null;
+  nationalId: string;
+  phoneNumber: string;
+  createdAt: Date;
+  insuranceType: 
+    | 'education' 
+    | 'intego' 
+    | 'family_insurance' 
+    | 'epi' 
+    | 'nkunganire_shoferi' 
+    | 'umurage_amashuri' 
+    | 'ikimina' 
+    | 'others';
+  paymentMethod: 'salary_deduction' | 'momo';
+  amount: number;
+  agentId: number;
+  notes: string | null;
 }
 
-export const roleColors: Record<UserRole, ThemeColors> = {
-  admin: {
-    primary: '#2563eb',
-    secondary: '#1e40af',
-    gradient: 'linear-gradient(to right, #2563eb, #1e40af)',
-    background: 'bg-blue-50'
-  },
-  manager: {
-    primary: '#9333ea',
-    secondary: '#6b21a8',
-    gradient: 'linear-gradient(to right, #9333ea, #6b21a8)',
-    background: 'bg-purple-50'
-  },
-  sales_staff: {
-    primary: '#16a34a',
-    secondary: '#166534',
-    gradient: 'linear-gradient(to right, #16a34a, #166534)',
-    background: 'bg-green-50'
-  },
-  individual_agent: {
-    primary: '#ea580c',
-    secondary: '#9a3412',
-    gradient: 'linear-gradient(to right, #ea580c, #9a3412)',
-    background: 'bg-orange-50'
-  },
-  team_leader: {
-    primary: '#d97706',
-    secondary: '#92400e',
-    gradient: 'linear-gradient(to right, #d97706, #92400e)',
-    background: 'bg-amber-50'
-  },
-  sales_agent: {
-    primary: '#ea580c',
-    secondary: '#9a3412',
-    gradient: 'linear-gradient(to right, #ea580c, #9a3412)',
-    background: 'bg-orange-50'
-  }
-};
+export interface Attendance {
+  id: number;
+  userId: number;
+  date: Date;
+  sector: 'health' | 'admin_staff' | 'private_sectors' | 'other' | null;
+  location: string | null;
+  isPresent: boolean | null;
+  isExcused: boolean | null;
+  excusedById: number | null;
+  excuseReason: string | null;
+}
+
+export interface HelpRequest {
+  id: number;
+  userId: number;
+  submissionDate: Date;
+  title: string;
+  content: string;
+  status: string;
+  managerId: number | null;
+  salesStaffId: number | null;
+  teamLeaderId: number | null;
+}
+
+export interface Report {
+  id: number;
+  userId: number;
+  reportDate: Date;
+  title: string;
+  content: string;
+  reportType: 'daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'custom';
+  period: string | null;
+}
+
+export interface Activity {
+  id: number;
+  userId: number | null;
+  createdAt: Date;
+  action: string;
+  details: string | null;
+}
+
+export interface Message {
+  id: number;
+  senderId: number;
+  receiverId: number;
+  content: string;
+  timestamp: Date;
+  isRead: boolean;
+}
+
+export interface Performance {
+  id: number;
+  userId: number;
+  period: string;
+  targets: number;
+  achieved: number;
+  rating: number | null;
+  comments: string | null;
+  evaluatorId: number | null;
+}
