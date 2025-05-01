@@ -9,6 +9,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { CalendarIcon, Download, Eye, FileText, Loader2, Plus } from 'lucide-react';
+import ReportForm from '@/components/reports/ReportForm';
 import {
   Dialog,
   DialogContent,
@@ -307,8 +308,8 @@ export default function ReportsPage() {
                     <div className="py-4">
                       {user && (
                         <ReportForm 
-                          onSubmit={() => {}} 
-                          isSubmitting={false} 
+                          onSubmit={handleCreateReport} 
+                          isSubmitting={createReportMutation.isPending} 
                           role={user.role}
                         />
                       )}

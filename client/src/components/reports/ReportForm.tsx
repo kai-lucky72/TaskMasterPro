@@ -32,24 +32,34 @@ interface ReportFormProps {
     title: string;
     content: string;
     teamLeaderId?: number;
+    salesStaffId?: number;
   };
 }
 
 export default function ReportForm({ onSubmit, isSubmitting, role, report }: ReportFormProps) {
   const { user } = useAuth();
   
-  // Fetch team leaders if the current user is a sales agent
+  // Fetch appropriate supervisors based on the user's role
   const { data: teamLeadersData } = useQuery({
     queryKey: ['/api/users/by-role/team_leader'],
-    enabled: role === 'sales_agent'
+    enabled: role === 'sales_agent' || role === 'individual_agent'
+  });
+  
+  // Fetch sales staff for team leaders to forward reports to
+  const { data: salesStaffData } = useQuery({
+    queryKey: ['/api/users/by-role/sales_staff'],
+    enabled: role === 'team_leader'
   });
 
   // Form schema
   const formSchema = z.object({
     title: z.string().min(1, "Report title is required"),
     content: z.string().min(10, "Report content must be at least 10 characters"),
-    teamLeaderId: role === 'sales_agent' 
+    teamLeaderId: ['sales_agent', 'individual_agent'].includes(role) 
       ? z.string().min(1, "Team leader is required")
+      : z.string().optional(),
+    salesStaffId: role === 'team_leader'
+      ? z.string().min(1, "Sales staff is required")
       : z.string().optional()
   });
 
@@ -59,15 +69,17 @@ export default function ReportForm({ onSubmit, isSubmitting, role, report }: Rep
     defaultValues: {
       title: report?.title || '',
       content: report?.content || '',
-      teamLeaderId: report?.teamLeaderId?.toString() || ''
+      teamLeaderId: report?.teamLeaderId?.toString() || '',
+      salesStaffId: report?.salesStaffId?.toString() || ''
     }
   });
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    // Convert teamLeaderId to number if present
+    // Convert IDs to numbers if present
     const submissionData = {
       ...values,
-      teamLeaderId: values.teamLeaderId ? parseInt(values.teamLeaderId) : undefined
+      teamLeaderId: values.teamLeaderId ? parseInt(values.teamLeaderId) : undefined,
+      salesStaffId: values.salesStaffId ? parseInt(values.salesStaffId) : undefined
     };
     
     onSubmit(submissionData);
@@ -90,7 +102,8 @@ export default function ReportForm({ onSubmit, isSubmitting, role, report }: Rep
           )}
         />
         
-        {role === 'sales_agent' && (
+        {/* Team Leader selector for individual agents and sales agents */}
+        {['sales_agent', 'individual_agent'].includes(role) && (
           <FormField
             control={form.control}
             name="teamLeaderId"
@@ -107,6 +120,34 @@ export default function ReportForm({ onSubmit, isSubmitting, role, report }: Rep
                     {teamLeadersData?.users?.map((leader: any) => (
                       <SelectItem key={leader.id} value={leader.id.toString()}>
                         {leader.firstName} {leader.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
+        {/* Sales Staff selector for team leaders */}
+        {role === 'team_leader' && (
+          <FormField
+            control={form.control}
+            name="salesStaffId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sales Staff</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select sales staff" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {salesStaffData?.users?.map((staff: any) => (
+                      <SelectItem key={staff.id} value={staff.id.toString()}>
+                        {staff.firstName} {staff.lastName}
                       </SelectItem>
                     ))}
                   </SelectContent>
